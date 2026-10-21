@@ -1,5 +1,6 @@
 ---
 import Icon, { type IconName } from './Icon.astro';
+import FloatingDecor from './FloatingDecor.astro';
 import type { Dict } from '../i18n/es';
 import { serviceOrder, type ServiceId } from '../config/site';
 
@@ -19,62 +20,94 @@ const icons: Record<ServiceId, IconName> = {
   pintura: 'roller',
   reparaciones: 'wrench',
 };
+// Color de cada ficha 3D del icono (rotando la paleta de marca)
+const tone: Record<ServiceId, string> = {
+  electricidad: 'sun',
+  reformas: 'coral',
+  fontaneria: 'navy',
+  'banos-cocinas': 'green',
+  climatizacion: 'navy',
+  albanileria: 'coral',
+  pladur: 'sand',
+  pintura: 'green',
+  reparaciones: 'coral',
+};
 const [featured, ...rest] = serviceOrder;
 const f = d.services.items[featured];
+const size = (id: ServiceId) => (id === 'reformas' ? 'wide' : id === 'reparaciones' ? 'strip' : 'one');
 ---
 
 <section id="servicios" class="section services" aria-labelledby="services-title">
+  <FloatingDecor set="services" />
   <div class="container">
-    <div class="section-head" data-reveal>
-      <span class="kicker">{d.services.kicker}</span>
+    <div class="section-head" data-reveal="left">
       <h2 id="services-title">{d.services.title}</h2>
       <p>{d.services.intro}</p>
     </div>
 
-    <article class="svc-featured" data-reveal>
-      <div class="svc-featured__icon"><Icon name={icons[featured]} size={40} /></div>
-      <div class="svc-featured__body">
-        <span class="svc-featured__badge">{d.services.featured}</span>
-        <h3>{f.name}</h3>
-        <p class="svc-featured__desc">{f.desc}</p>
-        <p class="svc-benefit">
-          <Icon name="check" size={20} />
-          <span><strong>{d.services.benefit}:</strong> {f.benefit}</span>
-        </p>
-      </div>
-      <a class="btn btn-primary svc-featured__cta" href="#contacto" data-service={featured}>
-        {d.services.cta}
-        <span class="visually-hidden">— {f.name}</span>
-        <Icon name="arrow" class="btn-arrow" />
-      </a>
-      <svg class="svc-featured__deco" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
-        <path d="M0 40h70v50h60v-30h70M0 150h40v-40h90v60h70M70 90v110" fill="none" stroke="currentColor" stroke-width="2"></path>
-        <circle cx="130" cy="60" r="6" fill="currentColor"></circle>
-        <circle cx="40" cy="110" r="6" fill="currentColor"></circle>
-        <circle cx="130" cy="170" r="6" fill="currentColor"></circle>
-      </svg>
-    </article>
+    <ul class="bento">
+      <li class="card card--featured" data-reveal="depth" data-tilt>
+        <div class="card__inner">
+          <span class="card__badge">{d.services.featured}</span>
+          <div class="icon3d icon3d--sun icon3d--lg" data-anim="bolt"><Icon name="bolt" size={38} /></div>
+          <h3>{f.name}</h3>
+          <p class="card__desc">{f.desc}</p>
+          <p class="card__benefit">
+            <Icon name="check" size={20} />
+            <span>{f.benefit}</span>
+          </p>
+          <a class="btn btn-primary btn-glow card__btn" href="#contacto" data-service={featured}>
+            {d.services.cta}
+            <span class="visually-hidden">— {f.name}</span>
+            <Icon name="arrow" class="btn-arrow" />
+          </a>
+        </div>
+        <!-- Circuito animado: la corriente recorre los cables y enciende la bombilla -->
+        <svg class="circuit" viewBox="0 0 320 260" aria-hidden="true" focusable="false">
+          <rect class="circuit__panel" x="18" y="150" width="62" height="86" rx="8"></rect>
+          <path class="circuit__breaker" d="M34 172h30M34 190h30M34 208h30"></path>
+          <path class="circuit__wire" d="M80 170 H180 V70 H250"></path>
+          <path class="circuit__wire" d="M80 200 H210 V150 H268"></path>
+          <path class="circuit__flow" d="M80 170 H180 V70 H250" pathLength="100"></path>
+          <path class="circuit__flow circuit__flow--2" d="M80 200 H210 V150 H268" pathLength="100"></path>
+          <circle class="circuit__glow" cx="262" cy="70" r="46"></circle>
+          <g class="circuit__bulb">
+            <path d="M262 46a22 22 0 0 0-12 40v8h24v-8a22 22 0 0 0-12-40z"></path>
+            <path class="circuit__base" d="M252 98h20M254 104h16"></path>
+          </g>
+          <rect class="circuit__socket" x="268" y="136" width="26" height="30" rx="5"></rect>
+          <path class="circuit__holes" d="M277 146v4M285 146v4"></path>
+        </svg>
+      </li>
 
-    <ul class="svc-grid">
       {
         rest.map((id, i) => {
           const s = d.services.items[id];
           return (
-            <li class="svc-card" data-reveal style={`--i:${i % 4}`}>
-              <div class="svc-card__icon">
-                <Icon name={icons[id]} size={28} />
+            <li
+              class:list={['card', `card--${size(id)}`]}
+              data-reveal={i % 2 ? 'flip-r' : 'flip'}
+              style={`--i:${i % 4}`}
+              data-tilt
+            >
+              <div class="card__inner">
+                <div class={`icon3d icon3d--${tone[id]}`} data-anim={icons[id]}>
+                  <Icon name={icons[id]} size={28} />
+                </div>
+                <div class="card__text">
+                  <h3>{s.name}</h3>
+                  <p class="card__desc">{s.desc}</p>
+                  <p class="card__benefit">
+                    <Icon name="check" size={18} />
+                    <span>{s.benefit}</span>
+                  </p>
+                </div>
+                <a class="card__cta" href="#contacto" data-service={id}>
+                  {d.services.cta}
+                  <span class="visually-hidden">— {s.name}</span>
+                  <Icon name="arrow" size={18} class="btn-arrow" />
+                </a>
               </div>
-              <h3>{s.name}</h3>
-              <p class="svc-card__desc">{s.desc}</p>
-              <p class="svc-benefit">
-                <Icon name="check" size={18} />
-                <span>{s.benefit}</span>
-              </p>
-              <a class="svc-card__cta" href="#contacto" data-service={id}>
-                {d.services.cta}
-                <span class="visually-hidden">— {s.name}</span>
-                <Icon name="arrow" size={18} class="btn-arrow" />
-              </a>
             </li>
           );
         })
@@ -83,209 +116,462 @@ const f = d.services.items[featured];
   </div>
 </section>
 
+<script>
+  // Inclinación 3D de las tarjetas siguiendo el puntero (solo ratón; en táctil quedan quietas).
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (fine.matches && !reduce.matches) {
+    document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
+      let rect: DOMRect | null = null;
+      let raf = 0;
+      let px = 0;
+      let py = 0;
+      const apply = () => {
+        raf = 0;
+        if (!rect) return;
+        const x = (px - rect.left) / rect.width - 0.5;
+        const y = (py - rect.top) / rect.height - 0.5;
+        card.style.setProperty('--ry', `${(x * 10).toFixed(2)}deg`);
+        card.style.setProperty('--rx', `${(-y * 10).toFixed(2)}deg`);
+        card.style.setProperty('--gx', `${((x + 0.5) * 100).toFixed(1)}%`);
+        card.style.setProperty('--gy', `${((y + 0.5) * 100).toFixed(1)}%`);
+      };
+      card.addEventListener('pointerenter', () => {
+        rect = card.getBoundingClientRect();
+        card.classList.add('is-tilting');
+      });
+      card.addEventListener('pointermove', (e) => {
+        px = e.clientX;
+        py = e.clientY;
+        if (!raf) raf = requestAnimationFrame(apply);
+      });
+      card.addEventListener('pointerleave', () => {
+        card.classList.remove('is-tilting');
+        card.style.setProperty('--rx', '0deg');
+        card.style.setProperty('--ry', '0deg');
+      });
+    });
+  }
+</script>
+
 <style>
   .services {
-    background: var(--color-paper-50);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(800px 500px at 90% 0%, rgb(255 194 61 / 0.14), transparent 60%),
+      radial-gradient(700px 600px at 0% 100%, rgb(61 110 168 / 0.1), transparent 60%),
+      var(--color-sand-50);
     border-block: 1px solid var(--color-border);
   }
 
-  /* Servicio principal */
-  .svc-featured {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: clamp(1.25rem, 1rem + 2vw, 2.5rem);
-    padding: clamp(1.5rem, 1rem + 2.5vw, 2.75rem);
-    margin-bottom: var(--space-6);
-    background: var(--color-ink-950);
-    color: var(--color-text-inverse);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    isolation: isolate;
-  }
-  .svc-featured__icon {
-    display: grid;
-    place-items: center;
-    width: 84px;
-    height: 84px;
-    border-radius: var(--radius-lg);
-    background: var(--color-brand);
-    color: var(--color-ink-950);
-  }
-  .svc-featured__badge {
-    display: inline-block;
-    margin-bottom: var(--space-2);
-    font-size: var(--text-xs);
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-orange-300);
-  }
-  .svc-featured h3 {
-    font-size: var(--text-2xl);
-    font-weight: 850;
-  }
-  .svc-featured__desc {
-    max-width: 44rem;
-    margin-top: var(--space-3);
-    color: var(--color-text-inverse-muted);
-  }
-  .svc-featured .svc-benefit {
-    color: var(--color-text-inverse);
-  }
-  .svc-featured .svc-benefit :global(svg) {
-    color: var(--color-green-300);
-  }
-  .svc-featured__cta {
-    background: var(--color-brand);
-    color: var(--color-ink-950);
-  }
-  .svc-featured__cta:hover,
-  .svc-featured__cta:focus-visible {
-    background: var(--color-white);
-    color: var(--color-ink-950);
-  }
-  .svc-featured__deco {
-    position: absolute;
-    right: -30px;
-    top: -30px;
-    width: 260px;
-    color: var(--color-white);
-    opacity: 0.07;
-    z-index: -1;
-  }
-
-  .svc-benefit {
-    display: flex;
-    gap: var(--space-2);
-    align-items: flex-start;
-    margin-top: var(--space-4);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    line-height: 1.45;
-  }
-  .svc-benefit :global(svg) {
-    flex: none;
-    margin-top: 1px;
-    color: var(--color-accent);
-  }
-
-  /* Rejilla */
-  .svc-grid {
+  .bento {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: dense;
     gap: var(--space-4);
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  .svc-card {
+  .card {
+    --rx: 0deg;
+    --ry: 0deg;
     position: relative;
+    perspective: 900px;
+  }
+  .card--featured {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .card--wide {
+    grid-column: span 2;
+  }
+  .card--strip {
+    grid-column: 1 / -1;
+  }
+  .card__inner {
+    position: relative;
+    height: 100%;
     display: flex;
     flex-direction: column;
     padding: var(--space-6);
-    background: var(--card-bg);
+    background: var(--color-white);
     border: 1px solid var(--card-border);
-    border-radius: var(--card-radius);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+    transform-style: preserve-3d;
     transition:
-      transform var(--duration-base) var(--ease-out),
-      border-color var(--duration-base) ease,
-      box-shadow var(--duration-base) ease;
+      transform 500ms var(--ease-out),
+      box-shadow 300ms ease,
+      border-color 300ms ease;
   }
-  .svc-card:hover,
-  .svc-card:focus-within {
-    transform: translateY(-4px);
-    border-color: var(--color-brand);
-    box-shadow: var(--shadow-md);
-  }
-  .svc-card__icon {
-    display: grid;
-    place-items: center;
-    width: 56px;
-    height: 56px;
-    margin-bottom: var(--space-5);
-    border-radius: var(--radius-md);
-    background: var(--color-brand-soft);
-    color: var(--color-brand-strong);
+  .card.is-tilting .card__inner {
     transition:
-      background-color var(--duration-base) ease,
-      color var(--duration-base) ease;
+      transform 120ms linear,
+      box-shadow 300ms ease,
+      border-color 300ms ease;
   }
-  .svc-card:hover .svc-card__icon,
-  .svc-card:focus-within .svc-card__icon {
-    background: var(--color-brand);
-    color: var(--color-white);
+  /* Reflejo de luz que sigue al puntero */
+  .card__inner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.55), transparent 45%);
+    opacity: 0;
+    transition: opacity 300ms ease;
+    pointer-events: none;
   }
-  .svc-card h3 {
+  .card:hover .card__inner,
+  .card:focus-within .card__inner {
+    border-color: var(--color-coral-300);
+    box-shadow: var(--shadow-lg);
+  }
+  .card.is-tilting .card__inner::after {
+    opacity: 1;
+  }
+  .card h3 {
     font-size: var(--text-xl);
     font-weight: 800;
+    transform: translateZ(24px);
   }
-  .svc-card__desc {
+  .card__desc {
     margin-top: var(--space-3);
     font-size: var(--text-sm);
     color: var(--color-text-muted);
   }
-  .svc-card .svc-benefit {
-    margin-bottom: var(--space-5);
+  .card__benefit {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+    margin-top: var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    line-height: 1.45;
   }
-  .svc-card__cta {
+  .card__benefit :global(svg) {
+    flex: none;
+    margin-top: 1px;
+    color: var(--color-green-500);
+  }
+  .card__cta {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     min-height: 44px;
     margin-top: auto;
+    padding-top: var(--space-4);
     font-weight: 700;
     font-size: var(--text-sm);
     color: var(--color-brand-strong);
     text-decoration: none;
   }
-  .svc-card__cta::after {
-    /* Toda la tarjeta es clicable sin anidar enlaces */
+  .card__cta::after {
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: inherit;
+    border-radius: var(--radius-xl);
   }
-  .svc-card__cta:hover :global(.btn-arrow),
-  .svc-card__cta:focus-visible :global(.btn-arrow) {
-    transform: translateX(4px);
-  }
-  .svc-card__cta :global(.btn-arrow) {
+  .card__cta :global(.btn-arrow) {
     transition: transform var(--duration-base) var(--ease-out);
   }
-  .svc-card__cta:focus-visible {
+  .card__cta:hover :global(.btn-arrow),
+  .card__cta:focus-visible :global(.btn-arrow) {
+    transform: translateX(4px);
+  }
+  .card__cta:focus-visible {
     outline: none;
   }
-  .svc-card:has(.svc-card__cta:focus-visible) {
+  .card:has(.card__cta:focus-visible) .card__inner {
     outline: 3px solid var(--color-focus);
     outline-offset: 3px;
   }
 
-  @media (max-width: 1100px) {
-    .svc-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Ficha 3D del icono: volumen con luz arriba y sombra abajo */
+  .icon3d {
+    --c1: var(--color-coral-300);
+    --c2: var(--color-coral-500);
+    --c3: var(--color-coral-700);
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    margin-bottom: var(--space-5);
+    border-radius: 18px;
+    color: var(--color-white);
+    background: linear-gradient(150deg, var(--c1), var(--c2) 55%, var(--c3));
+    box-shadow:
+      inset 0 2px 1px rgb(255 255 255 / 0.55),
+      inset 0 -5px 8px rgb(0 0 0 / 0.18),
+      0 14px 20px -10px var(--c3);
+    transform: translateZ(40px);
+    transition: transform 450ms var(--ease-spring);
+  }
+  .icon3d :global(svg) {
+    filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.25));
+  }
+  .icon3d--green {
+    --c1: var(--color-green-300);
+    --c2: var(--color-green-500);
+    --c3: var(--color-green-700);
+  }
+  .icon3d--navy {
+    --c1: var(--color-navy-300);
+    --c2: var(--color-navy-500);
+    --c3: var(--color-navy-800);
+  }
+  .icon3d--sun {
+    --c1: #ffe6a3;
+    --c2: var(--color-sun-400);
+    --c3: #c98200;
+    color: var(--color-navy-950);
+  }
+  .icon3d--sand {
+    --c1: var(--color-white);
+    --c2: var(--color-sand-200);
+    --c3: var(--color-sand-300);
+    color: var(--color-navy-800);
+  }
+  .icon3d--lg {
+    width: 84px;
+    height: 84px;
+    border-radius: 24px;
+  }
+  .card:hover .icon3d,
+  .card:focus-within .icon3d {
+    transform: translateZ(60px) translateY(-4px) rotate(-6deg);
+  }
+
+  /* Microanimación propia de cada icono al pasar por la tarjeta */
+  @media (prefers-reduced-motion: no-preference) {
+    .card:hover [data-anim='bolt'] :global(svg) {
+      animation: a-flash 600ms steps(2, jump-none) 2;
+    }
+    .card:hover [data-anim='tap'] :global(path:last-child) {
+      animation: a-drip 900ms var(--ease-in-out) infinite;
+    }
+    .card:hover [data-anim='roller'] :global(svg),
+    .card:hover [data-anim='panels'] :global(svg) {
+      animation: a-slide 700ms var(--ease-in-out) infinite alternate;
+    }
+    .card:hover [data-anim='wrench'] :global(svg) {
+      animation: a-turn 700ms var(--ease-in-out) infinite alternate;
+    }
+    .card:hover [data-anim='climate'] :global(svg),
+    .card:hover [data-anim='bath'] :global(svg),
+    .card:hover [data-anim='house'] :global(svg),
+    .card:hover [data-anim='bricks'] :global(svg) {
+      animation: a-bounce 600ms var(--ease-spring);
     }
   }
-  @media (max-width: 860px) {
-    .svc-featured {
-      grid-template-columns: 1fr;
-      align-items: start;
+  @keyframes a-flash {
+    50% {
+      opacity: 0.35;
     }
-    .svc-featured__icon {
-      width: 64px;
-      height: 64px;
+  }
+  @keyframes a-drip {
+    from {
+      transform: translateY(-3px);
+      opacity: 0;
     }
-    .svc-featured__cta {
-      justify-self: start;
+    60% {
+      opacity: 1;
+    }
+    to {
+      transform: translateY(4px);
+      opacity: 0;
+    }
+  }
+  @keyframes a-slide {
+    to {
+      transform: translateX(4px);
+    }
+  }
+  @keyframes a-turn {
+    to {
+      transform: rotate(-25deg);
+    }
+  }
+  @keyframes a-bounce {
+    40% {
+      transform: translateY(-5px) scale(1.08);
+    }
+  }
+
+  /* Tarjeta destacada: electricidad */
+  .card--featured .card__inner {
+    padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    background:
+      radial-gradient(500px 300px at 85% 20%, rgb(255 194 61 / 0.18), transparent 60%),
+      linear-gradient(160deg, var(--color-navy-800), var(--color-navy-950));
+    border-color: var(--color-navy-700);
+    color: var(--color-sand-50);
+    overflow: hidden;
+  }
+  .card--featured h3 {
+    font-size: var(--text-2xl);
+    font-weight: 850;
+  }
+  .card--featured .card__desc {
+    max-width: 30rem;
+    color: var(--color-navy-100);
+  }
+  .card--featured .card__benefit :global(svg) {
+    color: var(--color-green-300);
+  }
+  .card__badge {
+    align-self: flex-start;
+    margin-bottom: var(--space-5);
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-full);
+    background: rgb(255 194 61 / 0.15);
+    border: 1px solid rgb(255 194 61 / 0.4);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-sun-300);
+  }
+  .card__btn {
+    align-self: flex-start;
+    margin-top: auto;
+    transform: translateZ(30px);
+  }
+  .card--featured .card__inner::after {
+    background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.12), transparent 45%);
+  }
+
+  .circuit {
+    position: absolute;
+    right: 8px;
+    bottom: 70px;
+    width: min(44%, 300px);
+    pointer-events: none;
+  }
+  .circuit__panel {
+    fill: var(--color-navy-700);
+    stroke: var(--color-navy-300);
+    stroke-width: 2;
+  }
+  .circuit__breaker,
+  .circuit__holes {
+    stroke: var(--color-navy-100);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .circuit__wire {
+    fill: none;
+    stroke: rgb(217 230 245 / 0.25);
+    stroke-width: 5;
+    stroke-linejoin: round;
+  }
+  .circuit__flow {
+    fill: none;
+    stroke: var(--color-sun-400);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 10 90;
+    stroke-dashoffset: 100;
+  }
+  .circuit__bulb path:first-child {
+    fill: var(--color-sun-300);
+    stroke: var(--color-sun-500);
+    stroke-width: 3;
+  }
+  .circuit__base {
+    stroke: var(--color-navy-100);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .circuit__glow {
+    fill: var(--color-sun-400);
+    opacity: 0.18;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .circuit__socket {
+    fill: var(--color-sand-50);
+  }
+  .circuit__holes {
+    stroke: var(--color-navy-900);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .circuit__flow {
+      animation: flow 2.2s linear infinite;
+    }
+    .circuit__flow--2 {
+      animation-delay: -1.1s;
+    }
+    .circuit__glow {
+      animation: glow 2.2s ease-in-out infinite;
+    }
+  }
+  @keyframes flow {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes glow {
+    0%,
+    100% {
+      opacity: 0.12;
+      transform: scale(0.85);
+    }
+    55% {
+      opacity: 0.35;
+      transform: scale(1.1);
+    }
+  }
+
+  /* Franja de reparaciones */
+  .card--strip .card__inner {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-6);
+    background: linear-gradient(100deg, var(--color-coral-50), var(--color-white) 60%);
+  }
+  .card--strip .icon3d {
+    margin: 0;
+    flex: none;
+    transform: none;
+  }
+  .card--strip .card__text {
+    flex: 1;
+  }
+  .card--strip .card__cta {
+    margin: 0;
+    padding: 0;
+    flex: none;
+  }
+
+  @media (max-width: 1100px) {
+    .bento {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .card--featured {
+      grid-row: auto;
+    }
+  }
+  @media (max-width: 760px) {
+    .circuit {
+      display: none;
     }
   }
   @media (max-width: 600px) {
-    .svc-grid {
+    .bento {
       grid-template-columns: 1fr;
     }
-    .svc-featured__cta {
-      width: 100%;
+    .card--featured,
+    .card--wide {
+      grid-column: auto;
+    }
+    .card--strip .card__inner {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>

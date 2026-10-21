@@ -31,6 +31,15 @@ Todo está en **`src/config/site.ts`**: es el único archivo que hay que tocar. 
 - **Más adelante (Netlify)**: define `PUBLIC_FORM_PROVIDER=netlify`. Netlify Forms detecta el formulario solo; las notificaciones por correo se activan en *Forms → Notifications*.
 - Si se pone `PUBLIC_FORM_PROVIDER=none`, el formulario se desactiva y avisa de que se use el teléfono o WhatsApp.
 
+## Logotipo 3D, animaciones y fotos
+
+- **Logo 3D**: `src/scripts/three/logo3d.js` reconstruye en 3D el logo original: dos casas (coral y verde) con tejado de doble hastial, chimeneas y ventanas de dos hojas, más el rótulo arqueado «MITRU CONSTRUCTOR» (`wordmark.js`). La versión plana está en `public/logo.svg`. Las imágenes estáticas (`public/img/`, favicon, OG) salen del mismo modelo con `node scripts/generate-assets.mjs`.
+- **Hero**: escena WebGL (Three.js) con un shader GLSL propio de fondo (`blueprint.frag.glsl`: plano de obra vivo con suelo en perspectiva, niebla, chispas y luz que sigue al ratón). Se carga después de pintar la página. Sin GPU, en equipos modestos o con «movimiento reducido» se muestra la imagen estática del logo 3D. Añade `?3d` a la URL para forzar la escena al hacer pruebas.
+- **Operario de palo**: `StickWorker.astro`. Al pulsarlo salta, sale corriendo, vuelve y saluda. En «Fotos y proyectos» hay otro con una cámara.
+- **Cómo trabajamos**: casa isométrica que se construye paso a paso al hacer scroll.
+- **Transiciones**: entradas laterales, en profundidad y con giro 3D (`data-reveal="left|right|depth|flip|flip-r|tilt"`), tarjetas que se inclinan con el ratón, objetos de fondo en paralaje y transición 3D entre páginas (View Transitions).
+- **Fotos y proyectos** (en espera): añade las fotos a `public/proyectos/` y una entrada por foto en `src/config/projects.ts`. Mientras la lista esté vacía, se muestran marcos de «Próximamente», nunca fotos de banco.
+
 ## Comandos
 
 ```bash
@@ -39,7 +48,7 @@ npm run dev        # desarrollo en http://localhost:4321
 npm run build      # genera dist/
 npm test           # comprobaciones SEO, enlaces, etiquetas (tras build)
 node tests/a11y.mjs              # accesibilidad con axe (con `npm run preview` en marcha)
-node scripts/generate-assets.mjs # regenera imágenes OG, iconos y logo PNG
+node scripts/generate-assets.mjs # regenera logo 3D estático, imágenes OG, iconos y logo PNG
 ```
 
 ## Publicar

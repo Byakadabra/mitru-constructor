@@ -1,0 +1,140 @@
+---
+/**
+ * Objetos de obra flotando al fondo de una sección, a distintas profundidades.
+ * Paralaje con animaciones CSS ligadas al scroll (animation-timeline: view()); donde no hay
+ * soporte flotan suavemente. Decorativos: aria-hidden y sin eventos de puntero.
+ */
+interface Props {
+  set: 'services' | 'about' | 'contact' | 'projects';
+}
+const { set } = Astro.props;
+
+type Item = { kind: 'brick' | 'screw' | 'bolt' | 'pipe' | 'drop' | 'ruler'; x: number; y: number; s: number; d: number; r: number };
+const sets: Record<Props['set'], Item[]> = {
+  services: [
+    { kind: 'brick', x: 3, y: 8, s: 70, d: 0.9, r: -18 },
+    { kind: 'bolt', x: 92, y: 14, s: 54, d: 0.6, r: 12 },
+    { kind: 'screw', x: 86, y: 62, s: 40, d: 1, r: 30 },
+    { kind: 'pipe', x: 1, y: 70, s: 64, d: 0.5, r: 8 },
+    { kind: 'drop', x: 48, y: 96, s: 36, d: 0.7, r: 0 },
+  ],
+  about: [
+    { kind: 'ruler', x: 90, y: 10, s: 90, d: 0.6, r: -24 },
+    { kind: 'brick', x: 94, y: 78, s: 56, d: 1, r: 14 },
+    { kind: 'screw', x: 4, y: 40, s: 34, d: 0.8, r: -40 },
+  ],
+  contact: [
+    { kind: 'bolt', x: 2, y: 20, s: 48, d: 0.8, r: -10 },
+    { kind: 'brick', x: 95, y: 6, s: 60, d: 0.6, r: 20 },
+    { kind: 'pipe', x: 92, y: 88, s: 58, d: 1, r: -12 },
+  ],
+  projects: [
+    { kind: 'drop', x: 6, y: 18, s: 40, d: 0.8, r: 0 },
+    { kind: 'ruler', x: 88, y: 76, s: 80, d: 0.6, r: 18 },
+  ],
+};
+const items = sets[set];
+---
+
+<div class="decor" aria-hidden="true">
+  {
+    items.map((it, i) => (
+      <span
+        class="decor__item"
+        style={`left:${it.x}%;top:${it.y}%;width:${it.s}px;--d:${it.d};--r:${it.r}deg;--i:${i}`}
+      >
+        {it.kind === 'brick' && (
+          <svg viewBox="0 0 64 44">
+            <path d="M4 16 32 4l28 12-28 12z" fill="#f08a73" />
+            <path d="M4 16v14l28 12V28z" fill="#e2553f" />
+            <path d="M60 16v14L32 42V28z" fill="#b33a28" />
+          </svg>
+        )}
+        {it.kind === 'screw' && (
+          <svg viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="17" fill="#c9d5e3" />
+            <circle cx="20" cy="20" r="17" fill="none" stroke="#8fa3ba" stroke-width="3" />
+            <path d="M12 12l16 16M28 12 12 28" stroke="#5d6f86" stroke-width="4" stroke-linecap="round" />
+          </svg>
+        )}
+        {it.kind === 'bolt' && (
+          <svg viewBox="0 0 40 56">
+            <path d="M24 2 4 32h14l-4 22 22-32H22z" fill="#ffc23d" stroke="#c98200" stroke-width="2.5" stroke-linejoin="round" />
+          </svg>
+        )}
+        {it.kind === 'pipe' && (
+          <svg viewBox="0 0 64 64">
+            <path d="M10 8v26a20 20 0 0 0 20 20h26" fill="none" stroke="#24782f" stroke-width="16" stroke-linecap="round" />
+            <path d="M10 8v26a20 20 0 0 0 20 20h26" fill="none" stroke="#86cf91" stroke-width="5" stroke-linecap="round" opacity=".7" />
+          </svg>
+        )}
+        {it.kind === 'drop' && (
+          <svg viewBox="0 0 36 48">
+            <path d="M18 2C26 14 32 22 32 31a14 14 0 0 1-28 0C4 22 10 14 18 2z" fill="#3d6ea8" />
+            <path d="M12 30a7 7 0 0 0 5 8" stroke="#d9e6f5" stroke-width="3" fill="none" stroke-linecap="round" />
+          </svg>
+        )}
+        {it.kind === 'ruler' && (
+          <svg viewBox="0 0 96 28">
+            <rect x="2" y="4" width="92" height="20" rx="3" fill="#ffd772" stroke="#c98200" stroke-width="2" />
+            <path d="M12 4v8M22 4v5M32 4v8M42 4v5M52 4v8M62 4v5M72 4v8M82 4v5" stroke="#8a5a00" stroke-width="2" />
+          </svg>
+        )}
+      </span>
+    ))
+  }
+</div>
+
+<style>
+  .decor {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .decor__item {
+    position: absolute;
+    display: block;
+    opacity: calc(0.35 + var(--d) * 0.45);
+    filter: drop-shadow(0 calc(var(--d) * 18px) calc(var(--d) * 16px) rgb(8 24 43 / 0.22)) blur(calc((1 - var(--d)) * 1.6px));
+    transform: rotate(var(--r));
+  }
+  .decor__item svg {
+    width: 100%;
+    height: auto;
+  }
+  @media (max-width: 760px) {
+    .decor__item {
+      opacity: 0.35;
+      scale: 0.7;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* Respaldo: flotación lenta */
+    .decor__item {
+      animation: decor-float calc(7s + var(--i) * 1.3s) ease-in-out infinite alternate;
+    }
+    /* Paralaje ligado al scroll: lo que está "más cerca" (d alto) se mueve más */
+    @supports (animation-timeline: view()) {
+      .decor__item {
+        animation: decor-parallax linear both;
+        animation-timeline: view();
+        animation-range: cover;
+      }
+    }
+  }
+  @keyframes decor-float {
+    to {
+      transform: translateY(-14px) rotate(calc(var(--r) + 8deg));
+    }
+  }
+  @keyframes decor-parallax {
+    from {
+      transform: translateY(calc(var(--d) * 140px)) rotate(calc(var(--r) - 20deg));
+    }
+    to {
+      transform: translateY(calc(var(--d) * -140px)) rotate(calc(var(--r) + 20deg));
+    }
+  }
+</style>

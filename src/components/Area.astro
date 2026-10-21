@@ -11,8 +11,7 @@ const { d } = Astro.props;
 
 <section id="zona" class="section area" aria-labelledby="area-title">
   <div class="container area__inner">
-    <div class="area__copy" data-reveal>
-      <span class="kicker">{d.area.kicker}</span>
+    <div class="area__copy" data-reveal="left">
       <h2 id="area-title">{d.area.title}</h2>
       <p class="area__text">{d.area.text}</p>
       <p class="area__towns-label">{d.area.townsLabel}:</p>
@@ -38,23 +37,42 @@ const { d } = Astro.props;
       </div>
     </div>
 
-    <!-- Esquema (no es un mapa a escala): círculos concéntricos alrededor de Reus -->
-    <figure class="area__radar" data-reveal style="--i:1" role="img" aria-label={d.area.mapLabel}>
-      <svg viewBox="0 0 400 400" aria-hidden="true" focusable="false">
-        <circle cx="200" cy="200" r="190" class="ring ring--outer"></circle>
-        <circle cx="200" cy="200" r="127" class="ring"></circle>
-        <circle cx="200" cy="200" r="63" class="ring"></circle>
-        <path d="M200 10V390M10 200H390" class="axis"></path>
-        <circle cx="200" cy="200" r="70" class="pulse"></circle>
-        <circle cx="200" cy="200" r="14" class="dot"></circle>
-        <text x="200" y="240" class="label label--main">Reus</text>
-        <text x="200" y="28" class="label label--km">≈ {site.area.radiusKm} km</text>
-      </svg>
+    <!-- Esquema (no es un mapa a escala): plano inclinado en 3D con Reus en el centro -->
+    <figure class="map3d" data-reveal="depth" style="--i:1" role="img" aria-label={d.area.mapLabel}>
+      <div class="map3d__plane">
+        <svg viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+          <defs>
+            <radialGradient id="mapfill" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#d3ecd6"></stop>
+              <stop offset="1" stop-color="#edf7ee"></stop>
+            </radialGradient>
+          </defs>
+          <rect x="0" y="0" width="400" height="400" rx="40" class="map-bg"></rect>
+          <path d="M0 80H400M0 160H400M0 240H400M0 320H400M80 0V400M160 0V400M240 0V400M320 0V400" class="map-grid"></path>
+          <path d="M-10 300 C 90 260, 140 330, 230 280 S 360 250, 410 300" class="map-road"></path>
+          <path d="M120 -10 C 150 90, 230 140, 200 200 S 230 330, 280 410" class="map-road"></path>
+          <circle cx="200" cy="200" r="180" class="ring ring--outer"></circle>
+          <circle cx="200" cy="200" r="120" class="ring"></circle>
+          <circle cx="200" cy="200" r="60" class="ring"></circle>
+          <circle cx="200" cy="200" r="60" class="pulse"></circle>
+        </svg>
+        <span class="map3d__km">≈ {site.area.radiusKm} km</span>
+      </div>
+      <div class="map3d__pin" aria-hidden="true">
+        <span class="map3d__label">{site.area.city}</span>
+        <svg viewBox="0 0 40 56">
+          <path d="M20 54C8 38 2 30 2 20a18 18 0 0 1 36 0c0 10-6 18-18 34z" fill="#e2553f" stroke="#fff" stroke-width="3"></path>
+          <circle cx="20" cy="20" r="7" fill="#fff"></circle>
+        </svg>
+      </div>
     </figure>
   </div>
 </section>
 
 <style>
+  .area {
+    overflow-x: clip;
+  }
   .area__inner {
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
@@ -127,69 +145,134 @@ const { d } = Astro.props;
     color: var(--color-text-muted);
   }
 
-  .area__radar {
+  .map3d {
+    position: relative;
     margin: 0;
-    max-width: 440px;
     width: 100%;
+    max-width: 460px;
+    aspect-ratio: 1;
     justify-self: center;
+    perspective: 1100px;
   }
-  .area__radar svg {
+  .map3d__plane {
+    position: absolute;
+    inset: 6%;
+    transform: rotateX(56deg) rotateZ(-32deg);
+    transform-style: preserve-3d;
+    border-radius: 40px;
+    box-shadow:
+      0 2px 0 #b99e74,
+      0 4px 0 #b99e74,
+      0 6px 0 #a98d63,
+      0 8px 0 #a98d63,
+      0 40px 50px -10px rgb(8 24 43 / 0.45);
+    transition: transform 900ms var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .map3d:hover .map3d__plane {
+      transform: rotateX(50deg) rotateZ(-22deg);
+    }
+  }
+  .map3d__plane svg {
     width: 100%;
-    height: auto;
+    height: 100%;
+    border-radius: 40px;
+  }
+  .map-bg {
+    fill: url(#mapfill);
+  }
+  .map-grid {
+    stroke: rgb(47 143 59 / 0.15);
+    stroke-width: 1.5;
+  }
+  .map-road {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 9;
+    stroke-linecap: round;
   }
   .ring {
     fill: none;
-    stroke: var(--color-accent);
-    stroke-width: 1.5;
-    stroke-dasharray: 4 6;
-    opacity: 0.6;
+    stroke: var(--color-green-500);
+    stroke-width: 2;
+    stroke-dasharray: 6 8;
   }
   .ring--outer {
-    fill: var(--color-accent-soft);
+    fill: rgb(47 143 59 / 0.1);
     stroke-dasharray: none;
-    stroke-width: 2;
-    opacity: 1;
-  }
-  .axis {
-    stroke: var(--color-accent-tint);
-    stroke-width: 1;
-  }
-  .dot {
-    fill: var(--color-brand);
-    stroke: var(--color-white);
-    stroke-width: 4;
+    stroke-width: 3;
   }
   .pulse {
-    fill: var(--color-brand);
-    opacity: 0.12;
+    fill: var(--color-coral-500);
+    opacity: 0.15;
     transform-origin: 200px 200px;
   }
-  .label {
-    text-anchor: middle;
+  .map3d__km {
+    position: absolute;
+    left: 50%;
+    top: 2%;
+    transform: translateX(-50%);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    background: var(--color-green-700);
+    color: #fff;
     font-family: var(--font-display);
     font-weight: 800;
-    fill: var(--color-ink-900);
+    font-size: 0.95rem;
   }
-  .label--main {
-    font-size: 26px;
+  /* La chincheta "de pie" sobre el plano */
+  .map3d__pin {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 46px;
+    transform: translate(-50%, -100%);
+    display: grid;
+    justify-items: center;
+    filter: drop-shadow(0 12px 8px rgb(8 24 43 / 0.35));
   }
-  .label--km {
-    font-size: 15px;
-    fill: var(--color-accent-strong);
+  .map3d__pin svg {
+    width: 46px;
+  }
+  .map3d__label {
+    margin-bottom: 6px;
+    padding: 0.25rem 0.7rem;
+    border-radius: var(--radius-md);
+    background: var(--color-navy-950);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    box-shadow: var(--shadow-md);
   }
   @media (prefers-reduced-motion: no-preference) {
     .pulse {
       animation: pulse 3.2s var(--ease-out) infinite;
     }
+    .map3d__pin {
+      animation: pin-drop 900ms var(--ease-spring) both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 40%;
+    }
   }
   @keyframes pulse {
     0% {
-      transform: scale(0.3);
+      transform: scale(0.4);
       opacity: 0.35;
     }
     100% {
-      transform: scale(2.6);
+      transform: scale(3);
       opacity: 0;
+    }
+  }
+  @keyframes pin-drop {
+    from {
+      transform: translate(-50%, -260%);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, -100%);
+      opacity: 1;
     }
   }
 
@@ -197,8 +280,8 @@ const { d } = Astro.props;
     .area__inner {
       grid-template-columns: 1fr;
     }
-    .area__radar {
-      max-width: 340px;
+    .map3d {
+      max-width: 360px;
     }
   }
   @media (max-width: 520px) {

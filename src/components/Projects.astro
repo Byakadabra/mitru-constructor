@@ -1,0 +1,192 @@
+---
+/**
+ * Fotos y proyectos. Sin fotos reales todavía: se muestran marcos "Próximamente" (nunca fotos
+ * de banco presentadas como trabajos propios). Cuando src/config/projects.ts tenga entradas,
+ * se muestra la galería real automáticamente.
+ */
+import Icon from './Icon.astro';
+import StickWorker from './StickWorker.astro';
+import FloatingDecor from './FloatingDecor.astro';
+import type { Dict } from '../i18n/es';
+import { projects } from '../config/projects';
+
+interface Props {
+  d: Dict;
+}
+const { d } = Astro.props;
+const p = d.projects;
+---
+
+<section id="proyectos" class="section projects" aria-labelledby="projects-title" data-worker-host>
+  <FloatingDecor set="projects" />
+  <div class="container">
+    <div class="section-head" data-reveal="left">
+      <h2 id="projects-title">{p.title}</h2>
+      <p>{p.intro}</p>
+    </div>
+
+    {
+      projects.length > 0 ? (
+        <ul class="gallery">
+          {projects.map((pr, i) => (
+            <li data-reveal={i % 2 ? 'flip-r' : 'flip'} style={`--i:${i % 3}`}>
+              <figure>
+                <img src={pr.src} width={pr.width} height={pr.height} alt={pr.alt} loading="lazy" decoding="async" />
+                <figcaption>
+                  <strong>{pr.title}</strong>
+                  {pr.town && <span>{pr.town}</span>}
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="soon">
+          <ul class="frames">
+            {p.placeholders.map((label, i) => (
+              <li class="frame" data-reveal="tilt" style={`--i:${i};--rot:${[-3, 2, -1.5][i]}deg`}>
+                <div class="frame__photo">
+                  <Icon name="camera" size={30} />
+                  <span>{p.soon}</span>
+                </div>
+                <p class="frame__label">{label}</p>
+              </li>
+            ))}
+          </ul>
+          <div class="soon__side" data-reveal="right">
+            <StickWorker label={p.worker.label} bubbles={p.worker.bubbles} tool="camera" tone="dark" class="soon__worker" />
+            <a class="btn btn-primary btn-glow" href="#contacto">
+              {p.cta}
+              <Icon name="arrow" class="btn-arrow" />
+            </a>
+          </div>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .projects {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(800px 500px at 15% 0%, rgb(61 110 168 / 0.14), transparent 60%),
+      var(--color-navy-50);
+    border-top: 1px solid var(--color-navy-100);
+  }
+  .soon {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(1.5rem, 1rem + 3vw, 4rem);
+    align-items: end;
+  }
+  .frames {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-6);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .frame {
+    padding: var(--space-3) var(--space-3) var(--space-4);
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    transform: rotate(var(--rot));
+    transition:
+      transform 500ms var(--ease-spring),
+      box-shadow 300ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .frame:hover {
+      transform: rotate(0deg) translateY(-8px) scale(1.03);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+  .frame__photo {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: var(--space-2);
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-sm);
+    border: 2px dashed var(--color-navy-300);
+    background:
+      repeating-linear-gradient(-45deg, rgb(157 187 224 / 0.12) 0 12px, transparent 12px 24px),
+      var(--color-navy-50);
+    color: var(--color-navy-500);
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+  .frame__label {
+    margin-top: var(--space-3);
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-align: center;
+  }
+  .soon__side {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-4);
+    max-width: 260px;
+    text-align: center;
+  }
+  .soon__side :global(.soon__worker) {
+    width: 92px;
+  }
+  .soon__side .btn {
+    font-size: 0.95rem;
+  }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .gallery figure {
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    box-shadow: var(--shadow-md);
+  }
+  .gallery img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: transform 700ms var(--ease-out);
+  }
+  .gallery figure:hover img {
+    transform: scale(1.05);
+  }
+  .gallery figcaption {
+    display: grid;
+    padding: var(--space-4);
+  }
+  .gallery figcaption span {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 900px) {
+    .soon {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+  }
+  @media (max-width: 640px) {
+    .frames {
+      grid-template-columns: 1fr;
+      max-width: 340px;
+      margin-inline: auto;
+    }
+  }
+</style>

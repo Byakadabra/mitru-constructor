@@ -19,6 +19,7 @@ const en: Dict = {
     about: 'About us',
     process: 'How we work',
     area: 'Area',
+    projects: 'Projects',
     faq: 'FAQ',
     contact: 'Contact',
     cta: 'Get a quote',
@@ -49,6 +50,8 @@ const en: Dict = {
       { strong: '≈30 km', text: 'around Reus' },
     ],
     illoLabel: 'Illustration: a house under construction with electrical and plumbing installations',
+    worker: { label: 'Tap the worker: off to the job!', bubbles: ['Off to the job!', 'Free quote!', 'I’m back!'] },
+    spinLogo: 'Spin the 3D logo',
     tags: { electric: 'Electrical', water: 'Plumbing', wall: 'Drywall', paint: 'Painting' },
   },
 
@@ -192,6 +195,15 @@ const en: Dict = {
         a: 'If the job has a deadline and we agree on it, yes. It is not the norm, but we adapt when needed.',
       },
     ],
+  },
+
+  projects: {
+    title: 'Photos & projects',
+    intro: 'Real photos of our work in Reus and nearby will be here very soon.',
+    soon: 'Coming soon',
+    placeholders: ['Renovations', 'Bathrooms & kitchens', 'Installations'],
+    worker: { label: 'Tap the worker with the camera', bubbles: ['Snap!', 'Real photos soon', 'Say cheese!'] },
+    cta: 'Want your job to be next?',
   },
 
   contact: {

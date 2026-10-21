@@ -7,6 +7,7 @@ import Process from './Process.astro';
 import Area from './Area.astro';
 import Faq from './Faq.astro';
 import Contact from './Contact.astro';
+import Projects from './Projects.astro';
 import { t, routes, type Lang } from '../i18n';
 import { site, serviceOrder } from '../config/site';
 
@@ -82,5 +83,6 @@ const website = {
   <Process d={d} />
   <Area d={d} />
   <Faq d={d} />
+  <Projects d={d} />
   <Contact d={d} lang={lang} />
 </BaseLayout>

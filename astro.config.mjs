@@ -11,6 +11,8 @@ export default defineConfig({
   trailingSlash: 'always',
   build: { format: 'directory', inlineStylesheets: 'auto' },
   compressHTML: true,
+  // La escena 3D (Three.js) se carga bajo demanda en un chunk propio.
+  vite: { build: { chunkSizeWarningLimit: 700 } },
   integrations: [
     sitemap({
       i18n: { defaultLocale: 'es', locales: { es: 'es-ES', ca: 'ca-ES', en: 'en' } },

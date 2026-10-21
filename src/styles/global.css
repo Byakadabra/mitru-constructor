@@ -15,33 +15,49 @@ html {
   html {
     scroll-behavior: smooth;
   }
-  /* Transiciones entre páginas (aviso legal, cambio de idioma) — View Transitions API nativa. */
+  /* Transiciones entre páginas (aviso legal, cambio de idioma) — View Transitions API nativa,
+   * con giro en profundidad: la página saliente se aleja girando y la nueva entra desde el lado. */
   @view-transition {
     navigation: auto;
   }
   ::view-transition-old(root) {
-    animation: vt-out 220ms var(--ease-in-out) both;
+    animation: vt-out 380ms var(--ease-in-out) both;
+    transform-origin: 0% 50%;
   }
   ::view-transition-new(root) {
-    animation: vt-in 320ms var(--ease-out) both;
+    animation: vt-in 520ms var(--ease-out) 80ms both;
+    transform-origin: 100% 50%;
   }
 }
 
 @keyframes vt-out {
   to {
     opacity: 0;
+    transform: perspective(1400px) translateX(-8%) translateZ(-180px) rotateY(10deg);
   }
 }
 @keyframes vt-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: perspective(1400px) translateX(8%) translateZ(-180px) rotateY(-10deg);
   }
+}
+
+::selection {
+  background: var(--color-coral-500);
+  color: var(--color-white);
+}
+html {
+  scrollbar-color: var(--color-navy-700) var(--color-sand-200);
+  accent-color: var(--color-brand-strong);
 }
 
 body {
   margin: 0;
-  background: var(--color-bg);
+  background:
+    radial-gradient(1200px 700px at 8% -10%, rgb(255 194 61 / 0.12), transparent 60%),
+    radial-gradient(900px 900px at 100% 40%, rgb(61 110 168 / 0.1), transparent 60%),
+    var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--text-base);
@@ -49,6 +65,19 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
+}
+/* Retícula de plano muy sutil fija detrás de todo: da profundidad sin cargar la página. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(27 64 103 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(27 64 103 / 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at 50% 30%, #000 30%, transparent 85%);
 }
 
 img,
@@ -157,7 +186,7 @@ html.scroll-lock {
   top: -100px;
   z-index: 100;
   padding: var(--space-3) var(--space-4);
-  background: var(--color-ink-950);
+  background: var(--color-navy-950);
   color: var(--color-white);
   border-radius: var(--radius-md);
   font-weight: 600;
@@ -225,6 +254,37 @@ html.scroll-lock {
   background: var(--color-ink-900);
   color: var(--color-white);
 }
+.btn-ghost {
+  background: rgb(255 255 255 / 0.04);
+  border-color: rgb(245 238 226 / 0.55);
+  color: var(--color-sand-50);
+}
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  background: var(--color-sand-50);
+  color: var(--color-navy-950);
+}
+/* Brillo que cruza el botón principal al pasar el ratón */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: 0 10px 24px -10px rgb(226 85 63 / 0.7);
+}
+.btn-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 700ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn-glow:hover::after {
+    transform: translateX(120%);
+  }
+}
 .btn-sm {
   --btn-pad-y: 0.55rem;
   --btn-pad-x: 1.05rem;
@@ -232,19 +292,80 @@ html.scroll-lock {
   font-size: 0.95rem;
 }
 
-/* ── Revelado al hacer scroll (Reveal / Stagger Reveal) ──
- * Solo se oculta si hay JS (.js en <html>). Se usa animation con fill "backwards"
- * para no bloquear los transform de hover una vez terminada la entrada. */
+/* ── Revelado al hacer scroll ──────────────────────────────────
+ * Variantes: up (por defecto), left, right, depth (desde el fondo), flip (giro 3D en Y),
+ * tilt (se levanta en X, como una carta). Solo se oculta con JS (.js en <html>).
+ * animation con fill "backwards": no bloquea los transform de hover tras la entrada. */
 .js [data-reveal]:not(.is-in) {
   opacity: 0;
 }
 .js [data-reveal].is-in {
-  animation: reveal 650ms var(--ease-out) calc(var(--i, 0) * 110ms) backwards;
+  animation: reveal-up 700ms var(--ease-out) calc(var(--i, 0) * 90ms) backwards;
 }
-@keyframes reveal {
+.js [data-reveal='left'].is-in {
+  animation-name: reveal-left;
+}
+.js [data-reveal='right'].is-in {
+  animation-name: reveal-right;
+}
+.js [data-reveal='depth'].is-in {
+  animation-name: reveal-depth;
+  animation-duration: 900ms;
+}
+.js [data-reveal='flip'].is-in {
+  animation-name: reveal-flip;
+  animation-duration: 850ms;
+}
+.js [data-reveal='flip-r'].is-in {
+  animation-name: reveal-flip-r;
+  animation-duration: 850ms;
+}
+.js [data-reveal='tilt'].is-in {
+  animation-name: reveal-tilt;
+  animation-duration: 850ms;
+  transform-origin: 50% 100%;
+}
+@keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(28px);
+  }
+}
+@keyframes reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(-64px);
+  }
+}
+@keyframes reveal-right {
+  from {
+    opacity: 0;
+    transform: translateX(64px);
+  }
+}
+@keyframes reveal-depth {
+  from {
+    opacity: 0;
+    transform: perspective(900px) translateZ(-260px);
+    filter: blur(6px);
+  }
+}
+@keyframes reveal-flip {
+  from {
+    opacity: 0;
+    transform: perspective(1000px) translateX(-30px) rotateY(-38deg);
+  }
+}
+@keyframes reveal-flip-r {
+  from {
+    opacity: 0;
+    transform: perspective(1000px) translateX(30px) rotateY(38deg);
+  }
+}
+@keyframes reveal-tilt {
+  from {
+    opacity: 0;
+    transform: perspective(900px) rotateX(-42deg) translateY(30px);
   }
 }
 @media (prefers-reduced-motion: reduce) {

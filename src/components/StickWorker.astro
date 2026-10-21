@@ -1,0 +1,355 @@
+---
+/**
+ * Operario "de palo" interactivo.
+ * Reposo: respira y da martillazos (o hace fotos, con tool="camera").
+ * Al pulsarlo (ratón, táctil o teclado): coge impulso, salta con voltereta, sale corriendo,
+ * vuelve caminando y saluda con un bocadillo. Con movimiento reducido solo saluda.
+ */
+interface Props {
+  label: string;
+  bubbles: string[];
+  tool?: 'hammer' | 'camera';
+  tone?: 'light' | 'dark';
+  class?: string;
+}
+const { label, bubbles, tool = 'hammer', tone = 'light', class: className } = Astro.props;
+---
+
+<div class:list={['worker', `worker--${tone}`, className]} data-worker data-bubbles={JSON.stringify(bubbles)}>
+  <button class="worker__btn" type="button" aria-label={label} data-worker-btn>
+    <span class="worker__bubble" aria-hidden="true" data-worker-bubble></span>
+    <svg class="worker__svg" viewBox="0 0 120 170" aria-hidden="true" focusable="false">
+      <ellipse class="worker__shadow" cx="60" cy="164" rx="30" ry="5"></ellipse>
+      <g class="worker__body" data-part="body">
+        <!-- piernas -->
+        <g class="worker__leg worker__leg--l"><path d="M60 104 L48 132 L46 160 L36 160"></path></g>
+        <g class="worker__leg worker__leg--r"><path d="M60 104 L70 132 L74 160 L84 160"></path></g>
+        <!-- tronco -->
+        <path class="worker__trunk" d="M60 52 L60 106"></path>
+        <!-- brazo izquierdo (saluda) -->
+        <g class="worker__arm worker__arm--l"><path d="M60 62 L42 84 L36 104"></path></g>
+        <!-- cabeza + casco -->
+        <g class="worker__head">
+          <circle cx="60" cy="34" r="13"></circle>
+          <circle class="worker__eye" cx="65" cy="33" r="1.8"></circle>
+          <path class="worker__smile" d="M58 39 q4 3 8 0"></path>
+          <path class="worker__hat" d="M45 29 a15 15 0 0 1 30 0 Z"></path>
+          <path class="worker__hat-brim" d="M42 29 h37"></path>
+        </g>
+        <!-- brazo derecho con herramienta -->
+        <g class="worker__arm worker__arm--r">
+          <path d="M60 62 L78 80 L88 70"></path>
+          {
+            tool === 'hammer' ? (
+              <g class="worker__tool">
+                <path class="worker__handle" d="M88 70 L100 52"></path>
+                <rect class="worker__head-tool" x="92" y="40" width="20" height="10" rx="2" transform="rotate(34 102 45)"></rect>
+              </g>
+            ) : (
+              <g class="worker__tool">
+                <rect class="worker__camera" x="84" y="56" width="22" height="15" rx="3"></rect>
+                <circle class="worker__lens" cx="95" cy="63.5" r="4.5"></circle>
+              </g>
+            )
+          }
+        </g>
+      </g>
+    </svg>
+  </button>
+</div>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+
+  document.querySelectorAll<HTMLElement>('[data-worker]').forEach((root) => {
+    const btn = root.querySelector<HTMLButtonElement>('[data-worker-btn]')!;
+    const bubble = root.querySelector<HTMLElement>('[data-worker-bubble]')!;
+    const bubbles: string[] = JSON.parse(root.dataset.bubbles || '[]');
+    let n = 0;
+    let busy = false;
+
+    const say = (text: string, ms = 1800) => {
+      bubble.textContent = text;
+      root.classList.add('is-talking');
+      window.setTimeout(() => root.classList.remove('is-talking'), ms);
+    };
+
+    const wave = async () => {
+      root.classList.add('is-waving');
+      await new Promise((r) => setTimeout(r, 1300));
+      root.classList.remove('is-waving');
+    };
+
+    const sequence = async () => {
+      const text = bubbles[n++ % bubbles.length] || '';
+      if (reduce.matches) {
+        say(text);
+        await wave();
+        return;
+      }
+      const host = (root.closest('[data-worker-host]') as HTMLElement) || document.body;
+      const hostRect = host.getBoundingClientRect();
+      const r = btn.getBoundingClientRect();
+      const toRight = hostRect.right - r.left + 40; // salir por la derecha
+      const fromLeft = -(r.right - hostRect.left + 40); // volver desde la izquierda
+
+      // 1. coge impulso + salto con voltereta
+      await btn.animate(
+        [
+          { transform: 'translateY(0) scale(1, 1)' },
+          { transform: 'translateY(4px) scale(1.06, 0.88)', offset: 0.18 },
+          { transform: 'translateY(-130px) rotate(-180deg) scale(1)', offset: 0.6 },
+          { transform: 'translateY(0) rotate(-360deg) scale(1)' },
+        ],
+        { duration: 900, easing: 'cubic-bezier(0.33, 0, 0.2, 1)' },
+      ).finished;
+      say(text, 1400);
+      // 2. sale corriendo
+      root.classList.add('is-running');
+      await btn.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${toRight}px)` }], {
+        duration: Math.max(900, toRight * 1.4),
+        easing: 'cubic-bezier(0.55, 0, 0.75, 0.4)',
+      }).finished;
+      // 3. vuelve caminando desde el otro lado
+      root.classList.remove('is-running');
+      root.classList.add('is-walking');
+      await btn.animate([{ transform: `translateX(${fromLeft}px)` }, { transform: 'translateX(0)' }], {
+        duration: Math.max(1600, -fromLeft * 2.2),
+        easing: EASE_OUT,
+      }).finished;
+      root.classList.remove('is-walking');
+      // 4. saluda
+      say(bubbles[n % bubbles.length] || text);
+      await wave();
+    };
+
+    btn.addEventListener('click', async () => {
+      if (busy) return;
+      busy = true;
+      root.classList.add('is-busy');
+      try {
+        await sequence();
+      } finally {
+        busy = false;
+        root.classList.remove('is-busy');
+      }
+    });
+  });
+</script>
+
+<style>
+  .worker {
+    --worker-ink: var(--color-sand-50);
+    width: 96px;
+    pointer-events: none;
+  }
+  .worker--dark {
+    --worker-ink: var(--color-navy-900);
+  }
+  .worker__btn {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    pointer-events: auto;
+    border-radius: var(--radius-md);
+    touch-action: manipulation;
+  }
+  .worker.is-busy .worker__btn {
+    cursor: default;
+  }
+  .worker__svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .worker__svg path,
+  .worker__svg circle:not(.worker__eye):not(.worker__lens) {
+    fill: none;
+    stroke: var(--worker-ink);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .worker__eye {
+    fill: var(--worker-ink);
+  }
+  .worker__smile {
+    stroke-width: 2.4 !important;
+  }
+  .worker__svg .worker__hat {
+    fill: var(--color-sun-400);
+    stroke: var(--color-sun-500);
+    stroke-width: 2;
+  }
+  .worker__svg .worker__hat-brim {
+    stroke: var(--color-sun-500);
+    stroke-width: 4;
+  }
+  .worker__svg .worker__handle {
+    stroke: var(--color-sun-300);
+    stroke-width: 4;
+  }
+  .worker__head-tool {
+    fill: var(--color-coral-500);
+  }
+  .worker__camera {
+    fill: var(--color-coral-500);
+  }
+  .worker__lens {
+    fill: var(--color-navy-900);
+    stroke: var(--color-sand-50);
+    stroke-width: 2;
+  }
+  .worker__shadow {
+    fill: rgb(0 0 0 / 0.25);
+  }
+
+  /* Pivotes */
+  .worker__arm,
+  .worker__leg,
+  .worker__body,
+  .worker__head {
+    transform-box: view-box;
+  }
+  .worker__arm {
+    transform-origin: 60px 62px;
+  }
+  .worker__leg {
+    transform-origin: 60px 104px;
+  }
+  .worker__body {
+    transform-origin: 60px 160px;
+  }
+  .worker__head {
+    transform-origin: 60px 46px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .worker__body {
+      animation: w-breathe 2.6s ease-in-out infinite;
+    }
+    .worker__arm--r {
+      animation: w-hammer 2.4s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+    }
+    .worker__head {
+      animation: w-nod 2.4s ease-in-out infinite;
+    }
+    /* Correr / caminar: ciclo de piernas y brazos */
+    .is-running .worker__leg--l,
+    .is-walking .worker__leg--l {
+      animation: w-leg 0.32s ease-in-out infinite alternate;
+    }
+    .is-running .worker__leg--r,
+    .is-walking .worker__leg--r {
+      animation: w-leg 0.32s ease-in-out infinite alternate-reverse;
+    }
+    .is-walking .worker__leg--l,
+    .is-walking .worker__leg--r {
+      animation-duration: 0.5s;
+    }
+    .is-running .worker__arm--l,
+    .is-walking .worker__arm--l {
+      animation: w-leg 0.32s ease-in-out infinite alternate-reverse;
+    }
+    .is-running .worker__arm--r,
+    .is-walking .worker__arm--r {
+      animation: w-leg 0.32s ease-in-out infinite alternate;
+    }
+    .is-running .worker__body {
+      animation: none;
+      transform: rotate(10deg);
+    }
+    .worker__btn:hover .worker__head,
+    .worker__btn:focus-visible .worker__head {
+      animation: none;
+      transform: rotate(-8deg);
+    }
+  }
+  .is-waving .worker__arm--l {
+    animation: w-wave 0.32s ease-in-out 4 alternate !important;
+  }
+
+  @keyframes w-breathe {
+    50% {
+      transform: translateY(-2px) scaleY(1.015);
+    }
+  }
+  @keyframes w-hammer {
+    0%,
+    55%,
+    100% {
+      transform: rotate(0deg);
+    }
+    70% {
+      transform: rotate(-55deg);
+    }
+    82% {
+      transform: rotate(18deg);
+    }
+  }
+  @keyframes w-nod {
+    70% {
+      transform: rotate(0deg);
+    }
+    84% {
+      transform: rotate(5deg);
+    }
+  }
+  @keyframes w-leg {
+    from {
+      transform: rotate(-28deg);
+    }
+    to {
+      transform: rotate(28deg);
+    }
+  }
+  @keyframes w-wave {
+    from {
+      transform: rotate(95deg);
+    }
+    to {
+      transform: rotate(135deg);
+    }
+  }
+
+  /* Bocadillo */
+  .worker__bubble {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    padding: 0.45rem 0.75rem;
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    color: var(--color-navy-950);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.92);
+    transform-origin: 50% 100%;
+    transition:
+      opacity 180ms ease,
+      transform 260ms var(--ease-spring);
+    pointer-events: none;
+  }
+  .worker__bubble::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    border: 7px solid transparent;
+    border-top-color: var(--color-white);
+    transform: translateX(-50%);
+  }
+  .is-talking .worker__bubble {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+</style>

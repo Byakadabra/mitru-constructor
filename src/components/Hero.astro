@@ -1,6 +1,6 @@
 ---
 import Icon from './Icon.astro';
-import HeroIllustration from './HeroIllustration.astro';
+import StickWorker from './StickWorker.astro';
 import type { Dict } from '../i18n/es';
 
 interface Props {
@@ -9,20 +9,37 @@ interface Props {
 const { d } = Astro.props;
 ---
 
-<section class="hero" aria-labelledby="hero-title">
+<section class="hero" aria-labelledby="hero-title" data-hero data-worker-host>
+  <!-- Escena 3D (WebGL). Sin WebGL o con movimiento reducido se queda la imagen estática. -->
+  <canvas class="hero__canvas" aria-hidden="true" data-hero-canvas></canvas>
+  <div class="hero__fallback-bg" aria-hidden="true"></div>
+
   <div class="container hero__inner">
+    <div class="hero__stage" data-hero-stage>
+      <img
+        class="hero__static"
+        src="/img/logo-3d.webp"
+        alt=""
+        width="900"
+        height="700"
+        fetchpriority="high"
+        decoding="async"
+        data-hero-static
+      />
+      <button class="hero__spin" type="button" aria-label={d.hero.spinLogo} hidden data-hero-spin></button>
+    </div>
+
     <div class="hero__copy">
-      <p class="hero__eyebrow">{d.hero.eyebrow}</p>
       <h1 id="hero-title" class="hero__title">
         {d.hero.lines.map((line, i) => <span class="hero__line" style={`--i:${i}`}>{line} </span>)}
       </h1>
       <p class="hero__sub">{d.hero.sub}</p>
       <div class="hero__ctas">
-        <a class="btn btn-primary" href="#contacto">
+        <a class="btn btn-primary btn-glow" href="#contacto">
           {d.hero.ctaPrimary}
           <Icon name="arrow" class="btn-arrow" />
         </a>
-        <a class="btn btn-secondary" href="#servicios">{d.hero.ctaSecondary}</a>
+        <a class="btn btn-ghost" href="#servicios">{d.hero.ctaSecondary}</a>
       </div>
       <ul class="hero__facts">
         {
@@ -35,63 +52,157 @@ const { d } = Astro.props;
         }
       </ul>
     </div>
-    <div class="hero__visual">
-      <HeroIllustration d={d} />
-    </div>
   </div>
+
+  <StickWorker class="hero__worker" label={d.hero.worker.label} bubbles={d.hero.worker.bubbles} />
+  <div class="hero__ground" aria-hidden="true"></div>
 </section>
+
+<script>
+  const host = document.querySelector<HTMLElement>('[data-hero]');
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
+  const stage = document.querySelector<HTMLElement>('[data-hero-stage]');
+  const staticImg = document.querySelector<HTMLImageElement>('[data-hero-static]');
+  const spinBtn = document.querySelector<HTMLButtonElement>('[data-hero-spin]');
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+  // WebGL con aceleración por hardware. Si el navegador dibuja por software (sin GPU) o el equipo
+  // es muy modesto, se queda la imagen estática del logo 3D: mismo aspecto, sin coste de CPU.
+  const gpuOk = (() => {
+    try {
+      const c = document.createElement('canvas');
+      const gl = (c.getContext('webgl2') || c.getContext('webgl')) as WebGLRenderingContext | null;
+      if (!gl) return false;
+      const info = gl.getExtension('WEBGL_debug_renderer_info');
+      const renderer = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      return !/swiftshader|llvmpipe|software|basic render/i.test(renderer);
+    } catch {
+      return false;
+    }
+  })();
+  const nav = navigator as Navigator & { deviceMemory?: number };
+  const lowEnd = (nav.hardwareConcurrency || 8) < 4 || (nav.deviceMemory || 8) < 3;
+  // ?3d fuerza la escena (para pruebas en equipos sin GPU).
+  const hasWebGL = new URLSearchParams(location.search).has('3d') || (gpuOk && !lowEnd);
+
+  // La escena 3D se carga después de pintar la página (no retrasa el contenido).
+  if (host && canvas && stage && hasWebGL && !reduce && !saveData) {
+    const boot = async () => {
+      try {
+        const { mountHero } = await import('../scripts/three/hero-scene.js');
+        const hero = await mountHero({ canvas, host, stage });
+        host.classList.add('is-3d');
+        if (spinBtn) {
+          spinBtn.hidden = false;
+          spinBtn.addEventListener('click', () => hero.spin());
+        }
+      } catch (err) {
+        console.warn('[hero] 3D no disponible, se mantiene la imagen estática', err);
+      }
+    };
+    if ('requestIdleCallback' in window) requestIdleCallback(() => boot(), { timeout: 1200 });
+    else setTimeout(boot, 300);
+  }
+</script>
 
 <style>
   .hero {
     position: relative;
-    padding-block: clamp(2rem, 1rem + 4vw, 4.5rem) clamp(3.5rem, 2rem + 5vw, 6rem);
+    isolation: isolate;
     overflow: hidden;
+    color: var(--color-text-inverse);
+    background: var(--color-navy-950);
+    padding-block: clamp(2rem, 1rem + 4vw, 4rem) clamp(7rem, 5rem + 6vw, 9rem);
+    min-height: min(88svh, 860px);
+    display: grid;
+    align-items: center;
   }
-  .hero::before {
-    /* Banda de color suave tras la ilustración */
-    content: '';
+  .hero__canvas {
     position: absolute;
-    inset: 0 0 0 55%;
-    background: linear-gradient(180deg, var(--color-paper-200), var(--color-paper-100));
+    inset: 0;
+    width: 100%;
+    height: 100%;
     z-index: -1;
+    opacity: 0;
+    transition: opacity 900ms ease;
+  }
+  .is-3d .hero__canvas {
+    opacity: 1;
+  }
+  /* Fondo CSS (sin WebGL): mismo plano azul con retícula y horizonte cálido */
+  .hero__fallback-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(60% 40% at 70% 78%, rgb(250 122 66 / 0.28), transparent 70%),
+      linear-gradient(rgb(157 187 224 / 0.07) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, rgb(157 187 224 / 0.07) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(180deg, var(--color-navy-950), var(--color-navy-800));
   }
   .hero__inner {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    grid-template-areas: 'copy stage';
     align-items: center;
-    gap: clamp(2rem, 1rem + 4vw, 4.5rem);
+    gap: clamp(1.5rem, 1rem + 3vw, 4rem);
   }
-  .hero__eyebrow {
-    display: inline-block;
-    margin-bottom: var(--space-5);
-    padding: 0.4rem 0.85rem;
-    font-size: var(--text-xs);
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--color-accent-strong);
-    background: var(--color-accent-soft);
-    border: 1px solid var(--color-accent-tint);
-    border-radius: var(--radius-full);
+  .hero__copy {
+    grid-area: copy;
   }
+  .hero__stage {
+    grid-area: stage;
+    position: relative;
+    aspect-ratio: 9 / 7;
+    width: 100%;
+  }
+  .hero__static {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.45));
+    transition:
+      opacity 700ms ease,
+      transform 900ms var(--ease-out);
+  }
+  .is-3d .hero__static {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  .hero__spin {
+    position: absolute;
+    inset: 8% 12%;
+    border: 0;
+    border-radius: 40%;
+    background: transparent;
+    cursor: grab;
+  }
+  .hero__spin:active {
+    cursor: grabbing;
+  }
+
   .hero__title {
-    font-size: clamp(2.3rem, 0.9rem + 4vw, 4.4rem);
+    font-size: clamp(2.2rem, 0.9rem + 3.6vw, 4rem);
     font-weight: 850;
     font-stretch: 112%;
     line-height: 1.02;
     letter-spacing: -0.025em;
     text-wrap: initial;
+    color: var(--color-sand-50);
   }
   .hero__line {
     display: block;
   }
   .hero__line:last-child {
-    color: var(--color-brand-strong);
+    color: var(--color-coral-300);
   }
   .hero__sub {
     max-width: 36rem;
     margin-top: var(--space-6);
     font-size: var(--text-lg);
-    color: var(--color-text-muted);
+    color: var(--color-navy-100);
   }
   .hero__ctas {
     display: flex;
@@ -107,7 +218,7 @@ const { d } = Astro.props;
     margin: var(--space-10) 0 0;
     padding: var(--space-5) 0 0;
     list-style: none;
-    border-top: 1px solid var(--color-border-strong);
+    border-top: 1px solid rgb(217 230 245 / 0.22);
   }
   .hero__facts li {
     display: grid;
@@ -119,37 +230,54 @@ const { d } = Astro.props;
     font-size: clamp(1.3rem, 1.1rem + 0.8vw, 1.7rem);
     font-weight: 850;
     line-height: 1.1;
+    color: var(--color-sun-300);
   }
   .hero__facts span {
     font-size: var(--text-xs);
-    color: var(--color-text-muted);
+    color: var(--color-navy-100);
     line-height: 1.35;
   }
 
-  /* Entrada: revelado por líneas (Text Clip-Path Reveal) — sin JS */
+  .hero :global(.hero__worker) {
+    position: absolute;
+    right: clamp(7rem, 14vw, 14rem);
+    bottom: 22px;
+    z-index: 2;
+  }
+  .hero__ground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 30px;
+    background: linear-gradient(180deg, transparent, rgb(0 0 0 / 0.25));
+    border-top: 1px solid rgb(255 194 61 / 0.25);
+    z-index: 1;
+  }
+
+  /* Entrada del titular: barrido por líneas + textos que llegan desde el lado */
   @media (prefers-reduced-motion: no-preference) {
     .hero__line {
       clip-path: inset(-0.1em 100% -0.2em 0);
-      animation: line-reveal 760ms var(--ease-out) calc(120ms + var(--i) * 170ms) forwards;
+      animation: line-reveal 820ms var(--ease-out) calc(160ms + var(--i) * 160ms) forwards;
     }
-    .hero__eyebrow,
     .hero__sub,
     .hero__ctas,
     .hero__facts {
       opacity: 0;
-      animation: fade-up 600ms var(--ease-out) forwards;
-    }
-    .hero__eyebrow {
-      animation-delay: 40ms;
+      animation: fade-side 700ms var(--ease-out) forwards;
     }
     .hero__sub {
-      animation-delay: 600ms;
+      animation-delay: 620ms;
     }
     .hero__ctas {
-      animation-delay: 720ms;
+      animation-delay: 760ms;
     }
     .hero__facts {
-      animation-delay: 860ms;
+      animation-delay: 900ms;
+    }
+    .hero__static {
+      animation: static-in 1100ms var(--ease-out) 100ms backwards;
     }
   }
   @keyframes line-reveal {
@@ -157,19 +285,35 @@ const { d } = Astro.props;
       clip-path: inset(-0.1em -1em -0.2em 0);
     }
   }
-  @keyframes fade-up {
+  @keyframes fade-side {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateX(-28px);
     }
     to {
       opacity: 1;
       transform: none;
     }
   }
+  @keyframes static-in {
+    from {
+      opacity: 0;
+      transform: perspective(900px) translateZ(-240px) rotateY(-25deg);
+    }
+  }
 
   @media (max-width: 959px) {
-    /* En móvil el titular fluye como un párrafo y entra con un fundido. */
+    .hero {
+      min-height: auto;
+    }
+    .hero__inner {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'stage' 'copy';
+    }
+    .hero__stage {
+      max-width: 440px;
+      margin-inline: auto;
+    }
     .hero__line {
       display: inline;
       clip-path: none !important;
@@ -177,19 +321,10 @@ const { d } = Astro.props;
     }
     .hero__title {
       text-wrap: balance;
-      opacity: 0;
-      animation: fade-up 600ms var(--ease-out) 100ms forwards;
     }
-    .hero::before {
-      inset: 58% 0 0 0;
-    }
-    .hero__inner {
-      grid-template-columns: 1fr;
-    }
-    .hero__visual {
-      max-width: 560px;
-      width: 100%;
-      margin-inline: auto;
+    .hero :global(.hero__worker) {
+      width: 76px;
+      right: 16px;
     }
   }
   @media (max-width: 480px) {

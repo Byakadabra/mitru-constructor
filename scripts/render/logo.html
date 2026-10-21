@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>@font-face{font-family:'Bitter Variable';src:url(/node_modules/@fontsource-variable/bitter/files/bitter-latin-wght-normal.woff2) format('woff2-variations');font-weight:100 900}
+html,body{margin:0;background:transparent;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+</head>
+<body>
+<script type="module">
+  // Render estático del logo 3D (usado por scripts/generate-assets.mjs). ?w=&h=&yaw=&pitch=&bg=
+  import * as THREE from 'three';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+  import { buildLogo, addStudioLights } from '/src/scripts/three/logo3d.js';
+  import { buildWordmark } from '/src/scripts/three/wordmark.js';
+  const q = new URLSearchParams(location.search);
+  const w = +(q.get('w') || 800), h = +(q.get('h') || 600);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(1);
+  renderer.setSize(w, h);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  document.body.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  if (q.get('bg')) scene.background = new THREE.Color(q.get('bg'));
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.35;
+  addStudioLights(scene);
+  const { group } = buildLogo();
+  const tilt = new THREE.Group();
+  tilt.add(group);
+  if (q.get('word')) {
+    const box = new THREE.Box3().setFromObject(group);
+    const word = await buildWordmark({ width: 6.3 });
+    word.position.set(0, box.max.y + 0.3, 0.4);
+    tilt.add(word);
+    tilt.position.y = -0.75;
+  }
+  tilt.rotation.set(+(q.get('pitch') || 0.1), +(q.get('yaw') || -0.28), 0);
+  scene.add(tilt);
+  const camera = new THREE.PerspectiveCamera(30, w / h, 0.1, 100);
+  camera.position.set(0, 0.1, +(q.get('dist') || 9));
+  camera.lookAt(0, 0, 0);
+  renderer.render(scene, camera);
+  window.__export = (type = 'image/webp', quality = 0.9) => renderer.domElement.toDataURL(type, quality);
+  window.__ready = true;
+</script>
+</body>
+</html>

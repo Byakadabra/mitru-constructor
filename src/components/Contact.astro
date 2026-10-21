@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import FloatingDecor from './FloatingDecor.astro';
 import type { Dict } from '../i18n/es';
 import { routes, type Lang } from '../i18n';
 import { site, serviceOrder, telHref, mailHref, waHref } from '../config/site';
@@ -26,15 +27,15 @@ const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
 ---
 
 <section id="contacto" class="section contact" aria-labelledby="contact-title">
+  <FloatingDecor set="contact" />
   <div class="container contact__inner">
     <div class="contact__main">
-      <div class="section-head" data-reveal>
-        <span class="kicker">{d.contact.kicker}</span>
+      <div class="section-head" data-reveal="left">
         <h2 id="contact-title">{d.contact.title}</h2>
         <p>{d.contact.intro}</p>
       </div>
 
-      <div class="form-card" data-reveal style="--i:1">
+      <div class="form-card" data-reveal="tilt" style="--i:1">
         <form
           class="quote-form"
           name="presupuesto"
@@ -201,7 +202,7 @@ const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
       </div>
     </div>
 
-    <aside class="contact__aside" aria-labelledby="contact-direct" data-reveal style="--i:2">
+    <aside class="contact__aside" aria-labelledby="contact-direct" data-reveal="flip-r" style="--i:2">
       <h3 id="contact-direct">{d.contact.details.title}</h3>
       <ul class="direct">
         <li>
@@ -402,6 +403,14 @@ const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
 </script>
 
 <style>
+  .contact {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(900px 600px at 0% 100%, rgb(226 85 63 / 0.1), transparent 60%),
+      radial-gradient(800px 500px at 100% 0%, rgb(255 194 61 / 0.12), transparent 60%);
+  }
   .contact__inner {
     display: grid;
     grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
@@ -414,10 +423,10 @@ const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
 
   .form-card {
     padding: clamp(1.25rem, 0.8rem + 2.5vw, 2.5rem);
-    background: var(--color-bg-raised);
+    background: var(--color-white);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
   }
   .quote-form fieldset {
     display: grid;
@@ -690,7 +699,7 @@ const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
     position: sticky;
     top: calc(var(--header-h) + 24px);
     padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
-    background: var(--color-ink-950);
+    background: var(--color-navy-950);
     color: var(--color-text-inverse);
     border-radius: var(--radius-xl);
   }
@@ -713,7 +722,7 @@ const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
   }
   .direct li > :global(svg) {
     flex: none;
-    color: var(--color-orange-300);
+    color: var(--color-coral-300);
     margin-top: 4px;
   }
   .direct div {
@@ -732,12 +741,12 @@ const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
     color: var(--color-white);
   }
   .direct a {
-    text-decoration-color: var(--color-orange-300);
+    text-decoration-color: var(--color-coral-300);
     text-underline-offset: 4px;
     min-height: 32px;
   }
   .direct a:hover {
-    color: var(--color-orange-300);
+    color: var(--color-coral-300);
   }
   .direct__email {
     overflow-wrap: anywhere;
@@ -745,7 +754,15 @@ const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
   }
 
   @media (max-width: 960px) {
-    .contact__inner {
+    .contact {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(900px 600px at 0% 100%, rgb(226 85 63 / 0.1), transparent 60%),
+      radial-gradient(800px 500px at 100% 0%, rgb(255 194 61 / 0.12), transparent 60%);
+  }
+  .contact__inner {
       grid-template-columns: 1fr;
     }
     .contact__aside {

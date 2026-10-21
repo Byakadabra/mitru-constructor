@@ -19,6 +19,7 @@ const es = {
     about: 'Quiénes somos',
     process: 'Cómo trabajamos',
     area: 'Zona',
+    projects: 'Proyectos',
     faq: 'Preguntas',
     contact: 'Contacto',
     cta: 'Pedir presupuesto',
@@ -49,6 +50,8 @@ const es = {
       { strong: '≈30 km', text: 'alrededor de Reus' },
     ],
     illoLabel: 'Ilustración: casa en construcción con instalación eléctrica y de fontanería',
+    worker: { label: 'Pulsa al operario: ¡sale a la obra!', bubbles: ['¡Vamos a la obra!', '¡Presupuesto gratis!', '¡Ya estoy aquí!'] },
+    spinLogo: 'Girar el logotipo 3D',
     tags: { electric: 'Electricidad', water: 'Fontanería', wall: 'Pladur', paint: 'Pintura' },
   },
 
@@ -195,6 +198,15 @@ const es = {
         a: 'Si la obra tiene una fecha límite y lo acordamos, sí. No es lo habitual, pero nos adaptamos cuando hace falta.',
       },
     ],
+  },
+
+  projects: {
+    title: 'Fotos y proyectos',
+    intro: 'Muy pronto podrás ver aquí fotos reales de nuestros trabajos en Reus y alrededores.',
+    soon: 'Próximamente',
+    placeholders: ['Reformas', 'Baños y cocinas', 'Instalaciones'],
+    worker: { label: 'Pulsa al operario de la cámara', bubbles: ['¡Foto!', 'Pronto, fotos reales', '¡Sonríe!'] },
+    cta: '¿Quieres que tu obra sea la siguiente?',
   },
 
   contact: {

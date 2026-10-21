@@ -7,39 +7,58 @@
 
 :root {
   /* ── 1. PRIMITIVOS ─────────────────────────────────────────── */
-  --color-orange-50: #fff4ec;
-  --color-orange-100: #ffe3cf;
-  --color-orange-300: #f9a46e;
-  --color-orange-500: #ea5b1c; /* tejado del logo */
-  --color-orange-600: #d64d12;
-  --color-orange-700: #c2410c; /* texto blanco encima: 5.2:1 */
-  --color-orange-800: #9c340a;
+  /* Coral teja (tejado del logo original) */
+  --color-coral-50: #fff1ed;
+  --color-coral-100: #ffddd4;
+  --color-coral-300: #f79a85;
+  --color-coral-500: #e2553f;
+  --color-coral-600: #cc4430;
+  --color-coral-700: #b33a28; /* texto blanco encima: 5.9:1 */
+  --color-coral-800: #8f2c1d;
 
-  --color-green-50: #eef7ef;
-  --color-green-100: #d6ecd9;
-  --color-green-300: #8fcf98;
-  --color-green-500: #2e9440; /* casa del logo */
-  --color-green-600: #237a33;
-  --color-green-700: #1c6129; /* texto sobre papel: 7.0:1 */
-  --color-green-800: #164d21;
+  /* Verde (casa y letras del logo) */
+  --color-green-50: #edf7ee;
+  --color-green-100: #d3ecd6;
+  --color-green-300: #86cf91;
+  --color-green-500: #2f8f3b;
+  --color-green-600: #24782f;
+  --color-green-700: #1c6127; /* texto sobre arena: 6.6:1 */
+  --color-green-800: #154a1e;
 
+  /* Azul plano (planos de obra) — color de profundidad */
+  --color-navy-50: #eef4fb;
+  --color-navy-100: #d9e6f5;
+  --color-navy-300: #9dbbe0;
+  --color-navy-500: #3d6ea8;
+  --color-navy-700: #1b4067;
+  --color-navy-800: #12304f;
+  --color-navy-900: #0c2340;
+  --color-navy-950: #08182b;
+
+  /* Amarillo chispa (electricidad, casco) — solo acentos */
+  --color-sun-300: #ffd772;
+  --color-sun-400: #ffc23d;
+  --color-sun-500: #f4ab1a;
+
+  /* Neutros cálidos */
   --color-ink-950: #0f1712;
-  --color-ink-900: #17211b;
-  --color-ink-800: #233029;
-  --color-ink-700: #37443c;
-  --color-ink-600: #4e5b53; /* texto secundario sobre papel: 6.6:1 */
-  --color-ink-400: #8b968f;
-  --color-ink-300: #b9c1bc;
-  --color-ink-200: #d9ded9;
-  --color-ink-100: #ebeee9;
+  --color-ink-900: #18211c;
+  --color-ink-800: #243029;
+  --color-ink-700: #3a463f;
+  --color-ink-600: #4f5a53; /* texto secundario sobre arena: 6.2:1 */
+  --color-ink-400: #8a948d;
+  --color-ink-300: #b8bfba;
+  --color-ink-200: #d8d2c6;
 
-  --color-paper-50: #fcfbf8;
-  --color-paper-100: #f7f4ee;
-  --color-paper-200: #efe9df;
+  --color-sand-50: #fcf8f1;
+  --color-sand-100: #f5eee2;
+  --color-sand-200: #ebe0cd;
+  --color-sand-300: #ddcdb2;
   --color-white: #ffffff;
   --color-red-700: #b42318;
   --color-red-50: #fdf0ee;
 
+  --font-family-logo: 'Bitter Variable', 'Bitter', Georgia, serif;
   --font-family-display: 'Archivo Variable', 'Archivo', 'Arial Narrow', system-ui, sans-serif;
   --font-family-body: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
@@ -65,32 +84,36 @@
   --duration-fast: 160ms;
   --duration-base: 260ms;
   --duration-slow: 700ms;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 
   /* ── 2. SEMÁNTICOS ─────────────────────────────────────────── */
-  --color-bg: var(--color-paper-100);
-  --color-bg-raised: var(--color-white);
-  --color-bg-sunken: var(--color-paper-200);
-  --color-bg-inverse: var(--color-ink-950);
+  --color-bg: var(--color-sand-100);
+  --color-bg-raised: var(--color-sand-50);
+  --color-bg-sunken: var(--color-sand-200);
+  --color-bg-inverse: var(--color-navy-950);
   --color-text: var(--color-ink-900);
   --color-text-muted: var(--color-ink-600);
-  --color-text-inverse: var(--color-paper-50);
-  --color-text-inverse-muted: var(--color-ink-300);
-  --color-border: var(--color-ink-200);
+  --color-text-inverse: var(--color-sand-50);
+  --color-text-inverse-muted: var(--color-navy-100);
+  --color-border: var(--color-sand-300);
   --color-border-strong: var(--color-ink-300);
 
-  --color-brand: var(--color-orange-500);
-  --color-brand-strong: var(--color-orange-700);
-  --color-brand-stronger: var(--color-orange-800);
-  --color-brand-soft: var(--color-orange-50);
-  --color-brand-tint: var(--color-orange-100);
+  --color-brand: var(--color-coral-500);
+  --color-brand-strong: var(--color-coral-700);
+  --color-brand-stronger: var(--color-coral-800);
+  --color-brand-soft: var(--color-coral-50);
+  --color-brand-tint: var(--color-coral-100);
   --color-accent: var(--color-green-500);
   --color-accent-strong: var(--color-green-700);
   --color-accent-soft: var(--color-green-50);
   --color-accent-tint: var(--color-green-100);
 
-  --color-focus: var(--color-orange-700);
+  --color-focus: var(--color-coral-700);
+  --color-depth: var(--color-navy-900);
+  --color-depth-soft: var(--color-navy-50);
+  --color-spark: var(--color-sun-400);
   --color-danger: var(--color-red-700);
   --color-danger-soft: var(--color-red-50);
   --color-success: var(--color-green-700);
@@ -108,7 +131,8 @@
   --text-hero: clamp(2.45rem, 1.3rem + 4.9vw, 5.1rem);
 
   --shadow-sm: 0 1px 2px rgb(15 23 18 / 0.06), 0 1px 1px rgb(15 23 18 / 0.04);
-  --shadow-md: 0 10px 30px -12px rgb(15 23 18 / 0.18), 0 2px 6px rgb(15 23 18 / 0.06);
+  --shadow-md: 0 14px 34px -14px rgb(8 24 43 / 0.28), 0 2px 6px rgb(8 24 43 / 0.08);
+  --shadow-lg: 0 30px 60px -24px rgb(8 24 43 / 0.45), 0 8px 18px -8px rgb(8 24 43 / 0.2);
 
   --container: 1200px;
   --gutter: clamp(1rem, 0.6rem + 2vw, 2rem);
@@ -127,7 +151,7 @@
   --input-bg: var(--color-white);
   --input-border: var(--color-border-strong);
   --input-radius: var(--radius-md);
-  --header-bg: rgb(247 244 238 / 0.86);
+  --header-bg: rgb(245 238 226 / 0.82);
   --z-header: 50;
   --z-mobilebar: 40;
   --z-menu: 60;

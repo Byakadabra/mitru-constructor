@@ -19,6 +19,7 @@ const ca: Dict = {
     about: 'Qui som',
     process: 'Com treballem',
     area: 'Zona',
+    projects: 'Projectes',
     faq: 'Preguntes',
     contact: 'Contacte',
     cta: 'Demanar pressupost',
@@ -49,6 +50,8 @@ const ca: Dict = {
       { strong: '≈30 km', text: 'al voltant de Reus' },
     ],
     illoLabel: 'Il·lustració: casa en construcció amb instal·lació elèctrica i de lampisteria',
+    worker: { label: 'Prem l’operari: surt a l’obra!', bubbles: ['Som-hi, a l’obra!', 'Pressupost gratis!', 'Ja soc aquí!'] },
+    spinLogo: 'Girar el logotip 3D',
     tags: { electric: 'Electricitat', water: 'Lampisteria', wall: 'Pladur', paint: 'Pintura' },
   },
 
@@ -192,6 +195,15 @@ const ca: Dict = {
         a: 'Si l’obra té una data límit i ho acordem, sí. No és l’habitual, però ens adaptem quan cal.',
       },
     ],
+  },
+
+  projects: {
+    title: 'Fotos i projectes',
+    intro: 'Molt aviat podràs veure aquí fotos reals de les nostres feines a Reus i rodalies.',
+    soon: 'Properament',
+    placeholders: ['Reformes', 'Banys i cuines', 'Instal·lacions'],
+    worker: { label: 'Prem l’operari de la càmera', bubbles: ['Foto!', 'Aviat, fotos reals', 'Somriu!'] },
+    cta: 'Vols que la teva obra sigui la següent?',
   },
 
   contact: {
