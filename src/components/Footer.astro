@@ -1,0 +1,141 @@
+---
+import Logo from './Logo.astro';
+import { t, routes, type Lang } from '../i18n';
+import { site, telHref, mailHref } from '../config/site';
+
+interface Props {
+  lang: Lang;
+  onHome: boolean;
+}
+const { lang, onHome } = Astro.props;
+const d = t(lang);
+const r = routes[lang];
+const link = (id: string) => (onHome ? `#${id}` : `${r.home}#${id}`);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <Logo href={r.home} label={`${site.name} — ${d.nav.home}`} inverse />
+      <p>{d.footer.tagline}</p>
+    </div>
+
+    <nav aria-labelledby="ft-nav">
+      <h2 id="ft-nav">{d.footer.navTitle}</h2>
+      <ul>
+        <li><a href={link('servicios')}>{d.nav.services}</a></li>
+        <li><a href={link('nosotros')}>{d.nav.about}</a></li>
+        <li><a href={link('proceso')}>{d.nav.process}</a></li>
+        <li><a href={link('zona')}>{d.nav.area}</a></li>
+        <li><a href={link('preguntas')}>{d.nav.faq}</a></li>
+        <li><a href={link('contacto')}>{d.nav.contact}</a></li>
+      </ul>
+    </nav>
+
+    <div>
+      <h2>{d.footer.contactTitle}</h2>
+      <ul>
+        <li>{site.contact.person}</li>
+        <li><a href={telHref}>{site.contact.phoneDisplay}</a></li>
+        <li><a href={mailHref} class="site-footer__email">{site.contact.email}</a></li>
+        <li>{d.contact.details.hoursValue}</li>
+        <li>{site.area.city} ({site.area.province})</li>
+      </ul>
+    </div>
+
+    <nav aria-labelledby="ft-legal">
+      <h2 id="ft-legal">{d.footer.legalTitle}</h2>
+      <ul>
+        <li><a href={r.legal}>{d.legal.notice}</a></li>
+        <li><a href={r.privacy}>{d.legal.privacy}</a></li>
+        <li><a href={r.cookies}>{d.legal.cookies}</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="container site-footer__bottom">
+    <p>© {year} {site.name}. {d.footer.rights}</p>
+    <p>{d.footer.owner}: {site.legal.owner} ({site.legal.form.toLowerCase()})</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-ink-950);
+    color: var(--color-text-inverse-muted);
+    padding-block: var(--space-16) calc(var(--space-8) + 72px);
+    font-size: var(--text-sm);
+  }
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(3, 1fr);
+    gap: var(--space-10);
+  }
+  .site-footer__brand {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+  }
+  .site-footer__brand p {
+    max-width: 22rem;
+  }
+  .site-footer h2 {
+    margin-bottom: var(--space-4);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-white);
+  }
+  .site-footer ul {
+    display: grid;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .site-footer a {
+    display: inline-block;
+    padding-block: 2px;
+    color: var(--color-text-inverse-muted);
+    text-decoration: none;
+  }
+  .site-footer a:hover,
+  .site-footer a:focus-visible {
+    color: var(--color-white);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .site-footer__email {
+    overflow-wrap: anywhere;
+  }
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-6);
+    margin-top: var(--space-12);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-ink-800);
+    font-size: var(--text-xs);
+  }
+  @media (min-width: 961px) {
+    .site-footer {
+      padding-bottom: var(--space-8);
+    }
+  }
+  @media (max-width: 960px) {
+    .site-footer__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .site-footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 480px) {
+    .site-footer__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

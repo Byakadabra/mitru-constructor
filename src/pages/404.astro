@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { t, routes, langs } from '../i18n';
+const d = t('es');
+---
+
+<BaseLayout lang="es" pageKey="home" title={`${d.notFound.title} | MITRU CONSTRUCTOR`} description={`${d.notFound.text} ${d.meta.description}`} noindex onHome={false}>
+  <section class="nf container">
+    <p class="nf__code" aria-hidden="true">404</p>
+    <h1>{d.notFound.title}</h1>
+    <p>{d.notFound.text}</p>
+    <ul>
+      {langs.map((l) => <li><a class="btn btn-primary" href={routes[l].home} lang={l}>{t(l).notFound.back}</a></li>)}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-4);
+    padding-block: var(--space-20);
+  }
+  .nf__code {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-stretch: 125%;
+    font-size: clamp(5rem, 3rem + 10vw, 10rem);
+    line-height: 0.9;
+    color: var(--color-brand);
+  }
+  .nf h1 {
+    font-size: var(--text-3xl);
+  }
+  .nf ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+    margin: var(--space-4) 0 0;
+  }
+</style>

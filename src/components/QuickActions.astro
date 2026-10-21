@@ -1,0 +1,119 @@
+---
+/**
+ * Accesos rápidos de contacto:
+ *  - Móvil (≤960px): barra inferior fija con Llamar · WhatsApp · Presupuesto.
+ *  - Escritorio: botón flotante de WhatsApp.
+ */
+import Icon from './Icon.astro';
+import { t, routes, type Lang } from '../i18n';
+import { telHref, waHref } from '../config/site';
+
+interface Props {
+  lang: Lang;
+  onHome: boolean;
+}
+const { lang, onHome } = Astro.props;
+const d = t(lang);
+const quoteHref = onHome ? '#contacto' : `${routes[lang].home}#contacto`;
+const wa = waHref(d.whatsappText);
+---
+
+<aside aria-label={d.nav.quickContact}>
+<a class="wa-float" href={wa} target="_blank" rel="noopener" aria-label={d.whatsappLabel}>
+  <Icon name="whatsapp" size={30} />
+  <span class="wa-float__tip" aria-hidden="true">{d.whatsappLabel}</span>
+</a>
+
+<div class="mobilebar">
+  <a href={telHref}><Icon name="phone" size={22} /><span>{d.nav.call}</span></a>
+  <a href={wa} target="_blank" rel="noopener"><Icon name="whatsapp" size={22} /><span>{d.nav.whatsapp}</span></a>
+  <a href={quoteHref} class="mobilebar__primary"><Icon name="mail" size={22} /><span>{d.nav.quote}</span></a>
+</div>
+</aside>
+
+<style>
+  .wa-float {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: var(--z-mobilebar);
+    display: grid;
+    place-items: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--color-green-600);
+    color: var(--color-white);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--duration-base) var(--ease-out), background-color var(--duration-fast) ease;
+  }
+  .wa-float:hover,
+  .wa-float:focus-visible {
+    transform: translateY(-3px);
+    background: var(--color-green-700);
+  }
+  .wa-float__tip {
+    position: absolute;
+    right: calc(100% + 12px);
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-ink-950);
+    color: var(--color-white);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(6px);
+    pointer-events: none;
+    transition: opacity var(--duration-fast) ease, transform var(--duration-base) var(--ease-out);
+  }
+  .wa-float:hover .wa-float__tip,
+  .wa-float:focus-visible .wa-float__tip {
+    opacity: 1;
+    transform: none;
+  }
+
+  .mobilebar {
+    display: none;
+  }
+
+  @media (max-width: 960px) {
+    .wa-float {
+      display: none;
+    }
+    .mobilebar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: var(--z-mobilebar);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.25fr;
+      gap: 6px;
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+      background: rgb(252 251 248 / 0.97);
+      border-top: 1px solid var(--color-border);
+      box-shadow: 0 -6px 20px -12px rgb(15 23 18 / 0.25);
+    }
+    .mobilebar a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 48px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 0.92rem;
+      text-decoration: none;
+      color: var(--color-ink-900);
+      background: var(--color-paper-200);
+    }
+    .mobilebar a:nth-child(2) {
+      color: var(--color-green-700);
+    }
+    .mobilebar__primary {
+      background: var(--color-brand-strong) !important;
+      color: var(--color-white) !important;
+    }
+  }
+</style>

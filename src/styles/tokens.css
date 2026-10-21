@@ -1,0 +1,134 @@
+/*
+ * Design tokens — MITRU CONSTRUCTOR
+ * Tres capas: primitivos → semánticos → componentes.
+ * Los componentes solo usan tokens semánticos o de componente, nunca hex directos.
+ * Colores de marca tomados del logotipo: naranja teja (tejado) y verde (casa y letras).
+ */
+
+:root {
+  /* ── 1. PRIMITIVOS ─────────────────────────────────────────── */
+  --color-orange-50: #fff4ec;
+  --color-orange-100: #ffe3cf;
+  --color-orange-300: #f9a46e;
+  --color-orange-500: #ea5b1c; /* tejado del logo */
+  --color-orange-600: #d64d12;
+  --color-orange-700: #c2410c; /* texto blanco encima: 5.2:1 */
+  --color-orange-800: #9c340a;
+
+  --color-green-50: #eef7ef;
+  --color-green-100: #d6ecd9;
+  --color-green-300: #8fcf98;
+  --color-green-500: #2e9440; /* casa del logo */
+  --color-green-600: #237a33;
+  --color-green-700: #1c6129; /* texto sobre papel: 7.0:1 */
+  --color-green-800: #164d21;
+
+  --color-ink-950: #0f1712;
+  --color-ink-900: #17211b;
+  --color-ink-800: #233029;
+  --color-ink-700: #37443c;
+  --color-ink-600: #4e5b53; /* texto secundario sobre papel: 6.6:1 */
+  --color-ink-400: #8b968f;
+  --color-ink-300: #b9c1bc;
+  --color-ink-200: #d9ded9;
+  --color-ink-100: #ebeee9;
+
+  --color-paper-50: #fcfbf8;
+  --color-paper-100: #f7f4ee;
+  --color-paper-200: #efe9df;
+  --color-white: #ffffff;
+  --color-red-700: #b42318;
+  --color-red-50: #fdf0ee;
+
+  --font-family-display: 'Archivo Variable', 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+  --font-family-body: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  --duration-fast: 160ms;
+  --duration-base: 260ms;
+  --duration-slow: 700ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ── 2. SEMÁNTICOS ─────────────────────────────────────────── */
+  --color-bg: var(--color-paper-100);
+  --color-bg-raised: var(--color-white);
+  --color-bg-sunken: var(--color-paper-200);
+  --color-bg-inverse: var(--color-ink-950);
+  --color-text: var(--color-ink-900);
+  --color-text-muted: var(--color-ink-600);
+  --color-text-inverse: var(--color-paper-50);
+  --color-text-inverse-muted: var(--color-ink-300);
+  --color-border: var(--color-ink-200);
+  --color-border-strong: var(--color-ink-300);
+
+  --color-brand: var(--color-orange-500);
+  --color-brand-strong: var(--color-orange-700);
+  --color-brand-stronger: var(--color-orange-800);
+  --color-brand-soft: var(--color-orange-50);
+  --color-brand-tint: var(--color-orange-100);
+  --color-accent: var(--color-green-500);
+  --color-accent-strong: var(--color-green-700);
+  --color-accent-soft: var(--color-green-50);
+  --color-accent-tint: var(--color-green-100);
+
+  --color-focus: var(--color-orange-700);
+  --color-danger: var(--color-red-700);
+  --color-danger-soft: var(--color-red-50);
+  --color-success: var(--color-green-700);
+  --color-success-soft: var(--color-green-50);
+
+  --font-display: var(--font-family-display);
+  --font-body: var(--font-family-body);
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --text-2xl: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem);
+  --text-3xl: clamp(2.1rem, 1.4rem + 3vw, 3.6rem);
+  --text-hero: clamp(2.45rem, 1.3rem + 4.9vw, 5.1rem);
+
+  --shadow-sm: 0 1px 2px rgb(15 23 18 / 0.06), 0 1px 1px rgb(15 23 18 / 0.04);
+  --shadow-md: 0 10px 30px -12px rgb(15 23 18 / 0.18), 0 2px 6px rgb(15 23 18 / 0.06);
+
+  --container: 1200px;
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2rem);
+  --header-h: 72px;
+
+  /* ── 3. COMPONENTES ────────────────────────────────────────── */
+  --button-radius: var(--radius-full);
+  --button-primary-bg: var(--color-brand-strong);
+  --button-primary-bg-hover: var(--color-brand-stronger);
+  --button-primary-fg: var(--color-white);
+  --button-secondary-border: var(--color-ink-900);
+  --button-secondary-fg: var(--color-ink-900);
+  --card-bg: var(--color-bg-raised);
+  --card-border: var(--color-border);
+  --card-radius: var(--radius-lg);
+  --input-bg: var(--color-white);
+  --input-border: var(--color-border-strong);
+  --input-radius: var(--radius-md);
+  --header-bg: rgb(247 244 238 / 0.86);
+  --z-header: 50;
+  --z-mobilebar: 40;
+  --z-menu: 60;
+}

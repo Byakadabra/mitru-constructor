@@ -1,0 +1,291 @@
+---
+import Icon, { type IconName } from './Icon.astro';
+import type { Dict } from '../i18n/es';
+import { serviceOrder, type ServiceId } from '../config/site';
+
+interface Props {
+  d: Dict;
+}
+const { d } = Astro.props;
+
+const icons: Record<ServiceId, IconName> = {
+  electricidad: 'bolt',
+  reformas: 'house',
+  fontaneria: 'tap',
+  'banos-cocinas': 'bath',
+  climatizacion: 'climate',
+  albanileria: 'bricks',
+  pladur: 'panels',
+  pintura: 'roller',
+  reparaciones: 'wrench',
+};
+const [featured, ...rest] = serviceOrder;
+const f = d.services.items[featured];
+---
+
+<section id="servicios" class="section services" aria-labelledby="services-title">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="kicker">{d.services.kicker}</span>
+      <h2 id="services-title">{d.services.title}</h2>
+      <p>{d.services.intro}</p>
+    </div>
+
+    <article class="svc-featured" data-reveal>
+      <div class="svc-featured__icon"><Icon name={icons[featured]} size={40} /></div>
+      <div class="svc-featured__body">
+        <span class="svc-featured__badge">{d.services.featured}</span>
+        <h3>{f.name}</h3>
+        <p class="svc-featured__desc">{f.desc}</p>
+        <p class="svc-benefit">
+          <Icon name="check" size={20} />
+          <span><strong>{d.services.benefit}:</strong> {f.benefit}</span>
+        </p>
+      </div>
+      <a class="btn btn-primary svc-featured__cta" href="#contacto" data-service={featured}>
+        {d.services.cta}
+        <span class="visually-hidden">— {f.name}</span>
+        <Icon name="arrow" class="btn-arrow" />
+      </a>
+      <svg class="svc-featured__deco" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
+        <path d="M0 40h70v50h60v-30h70M0 150h40v-40h90v60h70M70 90v110" fill="none" stroke="currentColor" stroke-width="2"></path>
+        <circle cx="130" cy="60" r="6" fill="currentColor"></circle>
+        <circle cx="40" cy="110" r="6" fill="currentColor"></circle>
+        <circle cx="130" cy="170" r="6" fill="currentColor"></circle>
+      </svg>
+    </article>
+
+    <ul class="svc-grid">
+      {
+        rest.map((id, i) => {
+          const s = d.services.items[id];
+          return (
+            <li class="svc-card" data-reveal style={`--i:${i % 4}`}>
+              <div class="svc-card__icon">
+                <Icon name={icons[id]} size={28} />
+              </div>
+              <h3>{s.name}</h3>
+              <p class="svc-card__desc">{s.desc}</p>
+              <p class="svc-benefit">
+                <Icon name="check" size={18} />
+                <span>{s.benefit}</span>
+              </p>
+              <a class="svc-card__cta" href="#contacto" data-service={id}>
+                {d.services.cta}
+                <span class="visually-hidden">— {s.name}</span>
+                <Icon name="arrow" size={18} class="btn-arrow" />
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .services {
+    background: var(--color-paper-50);
+    border-block: 1px solid var(--color-border);
+  }
+
+  /* Servicio principal */
+  .svc-featured {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: clamp(1.25rem, 1rem + 2vw, 2.5rem);
+    padding: clamp(1.5rem, 1rem + 2.5vw, 2.75rem);
+    margin-bottom: var(--space-6);
+    background: var(--color-ink-950);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .svc-featured__icon {
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+    border-radius: var(--radius-lg);
+    background: var(--color-brand);
+    color: var(--color-ink-950);
+  }
+  .svc-featured__badge {
+    display: inline-block;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-orange-300);
+  }
+  .svc-featured h3 {
+    font-size: var(--text-2xl);
+    font-weight: 850;
+  }
+  .svc-featured__desc {
+    max-width: 44rem;
+    margin-top: var(--space-3);
+    color: var(--color-text-inverse-muted);
+  }
+  .svc-featured .svc-benefit {
+    color: var(--color-text-inverse);
+  }
+  .svc-featured .svc-benefit :global(svg) {
+    color: var(--color-green-300);
+  }
+  .svc-featured__cta {
+    background: var(--color-brand);
+    color: var(--color-ink-950);
+  }
+  .svc-featured__cta:hover,
+  .svc-featured__cta:focus-visible {
+    background: var(--color-white);
+    color: var(--color-ink-950);
+  }
+  .svc-featured__deco {
+    position: absolute;
+    right: -30px;
+    top: -30px;
+    width: 260px;
+    color: var(--color-white);
+    opacity: 0.07;
+    z-index: -1;
+  }
+
+  .svc-benefit {
+    display: flex;
+    gap: var(--space-2);
+    align-items: flex-start;
+    margin-top: var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: 1.45;
+  }
+  .svc-benefit :global(svg) {
+    flex: none;
+    margin-top: 1px;
+    color: var(--color-accent);
+  }
+
+  /* Rejilla */
+  .svc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .svc-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-6);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--card-radius);
+    transition:
+      transform var(--duration-base) var(--ease-out),
+      border-color var(--duration-base) ease,
+      box-shadow var(--duration-base) ease;
+  }
+  .svc-card:hover,
+  .svc-card:focus-within {
+    transform: translateY(-4px);
+    border-color: var(--color-brand);
+    box-shadow: var(--shadow-md);
+  }
+  .svc-card__icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--color-brand-soft);
+    color: var(--color-brand-strong);
+    transition:
+      background-color var(--duration-base) ease,
+      color var(--duration-base) ease;
+  }
+  .svc-card:hover .svc-card__icon,
+  .svc-card:focus-within .svc-card__icon {
+    background: var(--color-brand);
+    color: var(--color-white);
+  }
+  .svc-card h3 {
+    font-size: var(--text-xl);
+    font-weight: 800;
+  }
+  .svc-card__desc {
+    margin-top: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .svc-card .svc-benefit {
+    margin-bottom: var(--space-5);
+  }
+  .svc-card__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    margin-top: auto;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--color-brand-strong);
+    text-decoration: none;
+  }
+  .svc-card__cta::after {
+    /* Toda la tarjeta es clicable sin anidar enlaces */
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  .svc-card__cta:hover :global(.btn-arrow),
+  .svc-card__cta:focus-visible :global(.btn-arrow) {
+    transform: translateX(4px);
+  }
+  .svc-card__cta :global(.btn-arrow) {
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  .svc-card__cta:focus-visible {
+    outline: none;
+  }
+  .svc-card:has(.svc-card__cta:focus-visible) {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 1100px) {
+    .svc-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 860px) {
+    .svc-featured {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+    .svc-featured__icon {
+      width: 64px;
+      height: 64px;
+    }
+    .svc-featured__cta {
+      justify-self: start;
+    }
+  }
+  @media (max-width: 600px) {
+    .svc-grid {
+      grid-template-columns: 1fr;
+    }
+    .svc-featured__cta {
+      width: 100%;
+    }
+  }
+</style>

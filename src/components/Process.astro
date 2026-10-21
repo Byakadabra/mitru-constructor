@@ -1,0 +1,170 @@
+---
+import type { Dict } from '../i18n/es';
+interface Props {
+  d: Dict;
+}
+const { d } = Astro.props;
+---
+
+<section id="proceso" class="section process" aria-labelledby="process-title">
+  <div class="container">
+    <div class="section-head" data-reveal>
+      <span class="kicker">{d.process.kicker}</span>
+      <h2 id="process-title">{d.process.title}</h2>
+      <p>{d.process.intro}</p>
+    </div>
+
+    <ol class="steps" data-steps>
+      <li class="steps__track" aria-hidden="true"><span class="steps__fill"></span></li>
+      {
+        d.process.steps.map((s, i) => (
+          <li class="step" data-reveal style={`--i:${i}`}>
+            <span class="step__num" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3>
+              <span class="visually-hidden">{i + 1}. </span>
+              {s.title}
+            </h3>
+            <p>{s.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<script>
+  // La línea que une los pasos se dibuja al entrar en pantalla (SVG Line Draw, versión con transform).
+  const steps = document.querySelector<HTMLElement>('[data-steps]');
+  if (steps && 'IntersectionObserver' in window) {
+    steps.classList.add('will-draw');
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          steps.classList.add('is-drawn');
+          io.disconnect();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(steps);
+  }
+</script>
+
+<style>
+  .process {
+    background: var(--color-ink-950);
+    color: var(--color-text-inverse);
+  }
+  .process :global(.kicker) {
+    color: var(--color-orange-300);
+  }
+  .process .section-head p {
+    color: var(--color-text-inverse-muted);
+  }
+  .steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-6);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .steps__track {
+    position: absolute;
+    left: 28px;
+    right: 28px;
+    top: 27px;
+    height: 3px;
+    background: var(--color-ink-700);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .steps__fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-brand), var(--color-accent));
+    transform-origin: left;
+  }
+  .steps.will-draw .steps__fill {
+    transform: scaleX(0);
+    transition: transform 1600ms var(--ease-in-out) 200ms;
+  }
+  .steps.will-draw.is-drawn .steps__fill {
+    transform: scaleX(1);
+  }
+  .step {
+    position: relative;
+  }
+  .step__num {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: var(--space-5);
+    border-radius: var(--radius-full);
+    background: var(--color-ink-950);
+    border: 3px solid var(--color-brand);
+    font-family: var(--font-display);
+    font-weight: 850;
+    font-size: 1.1rem;
+    color: var(--color-white);
+    font-variant-numeric: tabular-nums;
+  }
+  .step:last-child .step__num {
+    border-color: var(--color-accent-strong);
+    background: var(--color-accent-strong);
+  }
+  .step h3 {
+    font-size: var(--text-lg);
+    font-weight: 800;
+  }
+  .step p {
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-inverse-muted);
+  }
+
+  @media (max-width: 960px) {
+    .steps {
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+    .steps__track {
+      left: 26px;
+      right: auto;
+      top: 28px;
+      bottom: 28px;
+      width: 3px;
+      height: auto;
+    }
+    .steps__fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(180deg, var(--color-brand), var(--color-accent));
+      transform-origin: top;
+    }
+    .steps.will-draw .steps__fill {
+      transform: scaleY(0);
+    }
+    .steps.will-draw.is-drawn .steps__fill {
+      transform: scaleY(1);
+    }
+    .step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      column-gap: var(--space-5);
+    }
+    .step__num {
+      grid-row: span 2;
+      margin: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .steps.will-draw .steps__fill {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from './Hero.astro';
+import Services from './Services.astro';
+import About from './About.astro';
+import Process from './Process.astro';
+import Area from './Area.astro';
+import Faq from './Faq.astro';
+import Contact from './Contact.astro';
+import { t, routes, type Lang } from '../i18n';
+import { site, serviceOrder } from '../config/site';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang);
+const url = new URL(routes[lang].home, site.url).href;
+
+// Datos estructurados: solo información confirmada por la empresa.
+const business = {
+  '@context': 'https://schema.org',
+  '@type': 'HomeAndConstructionBusiness',
+  '@id': `${new URL('/', site.url).href}#negocio`,
+  name: site.name,
+  description: d.meta.description,
+  url,
+  logo: new URL('/logo.svg', site.url).href,
+  image: new URL(`/og/og-${lang}.png`, site.url).href,
+  telephone: site.contact.phoneE164,
+  email: site.contact.email,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: site.area.city,
+    addressRegion: site.area.province,
+    addressCountry: site.area.country,
+  },
+  areaServed: [
+    { '@type': 'City', name: site.area.city },
+    {
+      '@type': 'GeoCircle',
+      geoMidpoint: { '@type': 'GeoCoordinates', latitude: 41.1561, longitude: 1.1069 },
+      geoRadius: site.area.radiusKm * 1000,
+    },
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer service',
+    telephone: site.contact.phoneE164,
+    email: site.contact.email,
+    areaServed: 'ES',
+  },
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: d.services.title,
+    itemListElement: serviceOrder.map((id) => ({
+      '@type': 'Offer',
+      itemOffered: { '@type': 'Service', name: d.services.items[id].name, description: d.services.items[id].desc },
+    })),
+  },
+};
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: site.name,
+  url,
+  inLanguage: d.lang,
+  publisher: { '@id': business['@id'] },
+};
+---
+
+<BaseLayout
+  lang={lang}
+  pageKey="home"
+  title={d.meta.title}
+  description={d.meta.description}
+  jsonLd={[business, website]}
+>
+  <Hero d={d} />
+  <Services d={d} />
+  <About d={d} />
+  <Process d={d} />
+  <Area d={d} />
+  <Faq d={d} />
+  <Contact d={d} lang={lang} />
+</BaseLayout>

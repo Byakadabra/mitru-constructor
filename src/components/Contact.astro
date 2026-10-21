@@ -1,0 +1,764 @@
+---
+import Icon from './Icon.astro';
+import type { Dict } from '../i18n/es';
+import { routes, type Lang } from '../i18n';
+import { site, serviceOrder, telHref, mailHref, waHref } from '../config/site';
+
+interface Props {
+  d: Dict;
+  lang: Lang;
+}
+const { d, lang } = Astro.props;
+const f = d.contact.form;
+const provider = site.form.provider;
+const homeUrl = new URL(routes[lang].home, site.url).href;
+
+// Destino del formulario según el proveedor configurado en src/config/site.ts.
+const action =
+  provider === 'formsubmit'
+    ? `https://formsubmit.co/${site.form.formsubmitTarget}`
+    : provider === 'netlify'
+      ? `${routes[lang].home}?enviado=1#contacto`
+      : undefined;
+const ajaxEndpoint =
+  provider === 'formsubmit' ? `https://formsubmit.co/ajax/${site.form.formsubmitTarget}` : provider === 'netlify' ? '/' : '';
+const honeypotName = provider === 'formsubmit' ? '_honey' : 'bot-field';
+---
+
+<section id="contacto" class="section contact" aria-labelledby="contact-title">
+  <div class="container contact__inner">
+    <div class="contact__main">
+      <div class="section-head" data-reveal>
+        <span class="kicker">{d.contact.kicker}</span>
+        <h2 id="contact-title">{d.contact.title}</h2>
+        <p>{d.contact.intro}</p>
+      </div>
+
+      <div class="form-card" data-reveal style="--i:1">
+        <form
+          class="quote-form"
+          name="presupuesto"
+          method="POST"
+          action={action}
+          novalidate
+          data-quote-form
+          data-provider={provider}
+          data-endpoint={ajaxEndpoint}
+          data-netlify={provider === 'netlify' ? 'true' : undefined}
+          netlify-honeypot={provider === 'netlify' ? 'bot-field' : undefined}
+          data-msg-sending={f.sending}
+          data-msg-summary={f.errors.summary}
+          data-msg-offline={f.offline}
+        >
+          <fieldset disabled={provider === 'none'}>
+            <legend class="visually-hidden">{f.legend}</legend>
+
+            {provider === 'netlify' && <input type="hidden" name="form-name" value="presupuesto" />}
+            {
+              provider === 'formsubmit' && (
+                <>
+                  <input type="hidden" name="_subject" value={f.emailSubject} />
+                  <input type="hidden" name="_template" value="table" />
+                  <input type="hidden" name="_captcha" value="false" />
+                  <input type="hidden" name="_next" value={`${homeUrl}?enviado=1#contacto`} />
+                </>
+              )
+            }
+            <input type="hidden" name="idioma" value={lang} />
+            <p class="hp" aria-hidden="true">
+              <label>
+                No rellenar <input name={honeypotName} tabindex="-1" autocomplete="off" />
+              </label>
+            </p>
+
+            <div class="field">
+              <label for="qf-name">{f.name} <span class="req" aria-hidden="true">*</span></label>
+              <input
+                id="qf-name"
+                name="nombre"
+                type="text"
+                autocomplete="name"
+                required
+                minlength="2"
+                maxlength="80"
+                aria-describedby="qf-name-err"
+                data-err={f.errors.name}
+              />
+              <p class="field__error" id="qf-name-err" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="qf-contact">{f.contact} <span class="req" aria-hidden="true">*</span></label>
+              <input
+                id="qf-contact"
+                name="contacto"
+                type="text"
+                inputmode="text"
+                autocomplete="tel"
+                required
+                maxlength="120"
+                aria-describedby="qf-contact-hint qf-contact-err"
+                data-err={f.errors.contact}
+                data-validate="contact"
+              />
+              <p class="field__hint" id="qf-contact-hint">{f.contactHint}</p>
+              <p class="field__error" id="qf-contact-err" aria-live="polite"></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="qf-service">{f.service} <span class="req" aria-hidden="true">*</span></label>
+                <div class="select">
+                  <select id="qf-service" name="servicio" required aria-describedby="qf-service-err" data-err={f.errors.service}>
+                    <option value="">{f.servicePlaceholder}</option>
+                    {serviceOrder.map((id) => <option value={id}>{d.services.items[id].name}</option>)}
+                    <option value="otro">{d.services.other}</option>
+                  </select>
+                  <Icon name="chevron" size={20} class="select__icon" />
+                </div>
+                <p class="field__error" id="qf-service-err" aria-live="polite"></p>
+              </div>
+              <div class="field">
+                <label for="qf-town">
+                  {f.town} <span class="opt">({f.optional})</span>
+                </label>
+                <input id="qf-town" name="localidad" type="text" autocomplete="address-level2" maxlength="80" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="qf-message">{f.message} <span class="req" aria-hidden="true">*</span></label>
+              <textarea
+                id="qf-message"
+                name="mensaje"
+                rows="5"
+                required
+                minlength="15"
+                maxlength="3000"
+                aria-describedby="qf-message-hint qf-message-err"
+                data-err={f.errors.message}></textarea>
+              <p class="field__hint" id="qf-message-hint">{f.messageHint}</p>
+              <p class="field__error" id="qf-message-err" aria-live="polite"></p>
+            </div>
+
+            <div class="field field--check">
+              <input
+                id="qf-privacy"
+                name="acepta_privacidad"
+                type="checkbox"
+                value="si"
+                required
+                aria-describedby="qf-privacy-err"
+                data-err={f.errors.privacy}
+              />
+              <label for="qf-privacy">
+                {f.privacyBefore} <a href={routes[lang].privacy}>{f.privacyLink}</a>.
+                <span class="req" aria-hidden="true">*</span>
+              </label>
+              <p class="field__error" id="qf-privacy-err" aria-live="polite"></p>
+            </div>
+
+            <div class="form-status" role="status" aria-live="polite" data-status></div>
+
+            <div class="form-error" hidden data-error tabindex="-1">
+              <Icon name="alert" size={22} />
+              <div>
+                <strong>{f.errorTitle}</strong>
+                <p data-error-text>{f.errorText}</p>
+                <p class="form-error__alt">
+                  <a href={telHref}>{site.contact.phoneDisplay}</a> ·
+                  <a href={waHref(d.whatsappText)} target="_blank" rel="noopener">WhatsApp</a>
+                </p>
+              </div>
+            </div>
+
+            <button class="btn btn-primary submit" type="submit" data-submit>
+              <span class="submit__label">{f.submit}</span>
+              <span class="submit__spinner" aria-hidden="true"></span>
+              <Icon name="arrow" class="btn-arrow submit__arrow" />
+            </button>
+            <p class="form-foot"><span aria-hidden="true">*</span> {f.required}</p>
+          </fieldset>
+          {
+            provider === 'none' && (
+              <p class="form-disabled">
+                <Icon name="alert" size={20} />
+                {f.disabled}
+              </p>
+            )
+          }
+        </form>
+
+        <div class="form-success" hidden data-success tabindex="-1">
+          <svg class="checkdraw" viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+            <circle cx="40" cy="40" r="30" pathLength="1"></circle>
+            <path d="M27 41l9 9 18-19" pathLength="1"></path>
+          </svg>
+          <h3>{f.successTitle}</h3>
+          <p>{f.successText}</p>
+          <button class="btn btn-secondary btn-sm" type="button" data-again>{f.another}</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="contact__aside" aria-labelledby="contact-direct" data-reveal style="--i:2">
+      <h3 id="contact-direct">{d.contact.details.title}</h3>
+      <ul class="direct">
+        <li>
+          <Icon name="user" />
+          <div>
+            <span>{d.contact.details.person}</span>
+            <strong>{site.contact.person}</strong>
+          </div>
+        </li>
+        <li>
+          <Icon name="phone" />
+          <div>
+            <span>{d.contact.details.phone}</span>
+            <a href={telHref}>{site.contact.phoneDisplay}</a>
+          </div>
+        </li>
+        <li>
+          <Icon name="whatsapp" />
+          <div>
+            <span>{d.contact.details.whatsapp}</span>
+            <a href={waHref(d.whatsappText)} target="_blank" rel="noopener">
+              {d.contact.details.whatsappAction}
+            </a>
+          </div>
+        </li>
+        <li>
+          <Icon name="mail" />
+          <div>
+            <span>{d.contact.details.email}</span>
+            <a href={mailHref} class="direct__email">{site.contact.email}</a>
+          </div>
+        </li>
+        <li>
+          <Icon name="clock" />
+          <div>
+            <span>{d.contact.details.hours}</span>
+            <strong>{d.contact.details.hoursValue}</strong>
+          </div>
+        </li>
+        <li>
+          <Icon name="pin" />
+          <div>
+            <span>{d.area.kicker}</span>
+            <strong>{d.area.title}</strong>
+          </div>
+        </li>
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-quote-form]');
+
+  // Preseleccionar el servicio al pulsar "Pedir presupuesto" en una tarjeta.
+  const select = document.querySelector<HTMLSelectElement>('#qf-service');
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-service]');
+    if (a && select) select.value = a.dataset.service!;
+  });
+  const preset = new URLSearchParams(location.search).get('servicio');
+  if (preset && select && [...select.options].some((o) => o.value === preset)) select.value = preset;
+
+  if (form && form.dataset.provider !== 'none') {
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+    const errorBox = form.querySelector<HTMLElement>('[data-error]')!;
+    const errorText = form.querySelector<HTMLElement>('[data-error-text]')!;
+    const defaultErrorText = errorText.textContent;
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const success = document.querySelector<HTMLElement>('[data-success]')!;
+    const again = document.querySelector<HTMLButtonElement>('[data-again]')!;
+    const fields = [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('[data-err]')];
+
+    const isContact = (v: string) => {
+      const email = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+      const digits = v.replace(/[\s().+-]/g, '');
+      const phone = /^\d{9,15}$/.test(digits);
+      return email || phone;
+    };
+
+    const validate = (el: (typeof fields)[number]) => {
+      let ok: boolean;
+      if (el instanceof HTMLInputElement && el.type === 'checkbox') ok = el.checked;
+      else if (el.dataset.validate === 'contact') ok = isContact(el.value.trim());
+      else {
+        const min = Number(el.getAttribute('minlength') || (el.required ? 1 : 0));
+        ok = el.value.trim().length >= min;
+      }
+      const err = document.getElementById(`${el.id}-err`);
+      el.setAttribute('aria-invalid', String(!ok));
+      el.closest('.field')?.classList.toggle('is-invalid', !ok);
+      if (err) err.textContent = ok ? '' : el.dataset.err || '';
+      return ok;
+    };
+
+    // Validación al salir del campo y, si ya hay error, mientras se corrige.
+    for (const el of fields) {
+      el.addEventListener('blur', () => {
+        if (el.value || el.getAttribute('aria-invalid')) validate(el);
+      });
+      el.addEventListener('input', () => {
+        if (el.getAttribute('aria-invalid') === 'true') validate(el);
+      });
+      el.addEventListener('change', () => {
+        if (el.getAttribute('aria-invalid') === 'true') validate(el);
+      });
+    }
+
+    const setLoading = (on: boolean) => {
+      form.classList.toggle('is-loading', on);
+      submit.disabled = on;
+      submit.setAttribute('aria-busy', String(on));
+      status.textContent = on ? form.dataset.msgSending! : '';
+    };
+
+    const showError = (msg?: string) => {
+      errorText.textContent = msg || defaultErrorText;
+      errorBox.hidden = false;
+      submit.classList.remove('shake');
+      void submit.offsetWidth;
+      submit.classList.add('shake');
+      errorBox.focus();
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.hidden = true;
+      const results = fields.map(validate);
+      if (results.includes(false)) {
+        status.textContent = form.dataset.msgSummary!;
+        fields[results.indexOf(false)].focus();
+        return;
+      }
+      if (!navigator.onLine) {
+        showError(form.dataset.msgOffline);
+        return;
+      }
+
+      setLoading(true);
+      const data = new FormData(form);
+      // En el correo se ve el nombre del servicio, no su identificador interno.
+      if (select?.selectedOptions[0]) data.set('servicio', select.selectedOptions[0].text);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      try {
+        let res: Response;
+        if (form.dataset.provider === 'netlify') {
+          res = await fetch(form.dataset.endpoint!, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(data as unknown as Record<string, string>).toString(),
+            signal: controller.signal,
+          });
+        } else {
+          res = await fetch(form.dataset.endpoint!, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(Object.fromEntries(data)),
+            signal: controller.signal,
+          });
+          // FormSubmit responde 200 con { success: "false" } si algo falla (p. ej. formulario sin activar).
+          if (res.ok) {
+            const json = await res.json().catch(() => ({}));
+            if (String(json.success) !== 'true') throw new Error(json.message || 'formsubmit');
+          }
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        form.reset();
+        form.hidden = true;
+        success.hidden = false;
+        success.focus();
+      } catch (err) {
+        console.error('[presupuesto] error de envío', err);
+        showError();
+      } finally {
+        clearTimeout(timer);
+        setLoading(false);
+      }
+    });
+
+    again.addEventListener('click', () => {
+      success.hidden = true;
+      form.hidden = false;
+      fields.forEach((el) => {
+        el.removeAttribute('aria-invalid');
+        el.closest('.field')?.classList.remove('is-invalid');
+      });
+      form.querySelector<HTMLInputElement>('#qf-name')?.focus();
+    });
+
+    // Vuelta de un envío sin JS (redirección del proveedor).
+    if (new URLSearchParams(location.search).get('enviado') === '1') {
+      form.hidden = true;
+      success.hidden = false;
+    }
+  }
+</script>
+
+<style>
+  .contact__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    gap: clamp(2rem, 1rem + 3vw, 4rem);
+    align-items: start;
+  }
+  .contact .section-head {
+    margin-bottom: var(--space-8);
+  }
+
+  .form-card {
+    padding: clamp(1.25rem, 0.8rem + 2.5vw, 2.5rem);
+    background: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+  }
+  .quote-form fieldset {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .field {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+  .field label {
+    font-weight: 650;
+    font-size: var(--text-sm);
+  }
+  .req {
+    color: var(--color-brand-strong);
+  }
+  .opt {
+    font-weight: 400;
+    color: var(--color-text-muted);
+  }
+  .field input:not([type='checkbox']),
+  .field textarea,
+  .field select {
+    width: 100%;
+    min-height: 52px;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    background: var(--input-bg);
+    border: 1.5px solid var(--input-border);
+    border-radius: var(--input-radius);
+    transition:
+      border-color var(--duration-fast) ease,
+      box-shadow var(--duration-fast) ease;
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 140px;
+  }
+  .field input:hover,
+  .field textarea:hover,
+  .field select:hover {
+    border-color: var(--color-ink-400);
+  }
+  .field input:focus-visible,
+  .field textarea:focus-visible,
+  .field select:focus-visible {
+    outline: none;
+    border-color: var(--color-brand-strong);
+    box-shadow: 0 0 0 4px var(--color-brand-tint);
+  }
+  .select {
+    position: relative;
+  }
+  .select select {
+    appearance: none;
+    padding-right: 2.75rem;
+    cursor: pointer;
+  }
+  .select :global(.select__icon) {
+    position: absolute;
+    right: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--color-text-muted);
+  }
+  .field__hint {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+  .field__error {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-danger);
+  }
+  .field__error:empty {
+    display: none;
+  }
+  .field.is-invalid input,
+  .field.is-invalid textarea,
+  .field.is-invalid select {
+    border-color: var(--color-danger);
+    background: var(--color-danger-soft);
+  }
+  .field--check {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    column-gap: var(--space-3);
+  }
+  .field--check input {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    accent-color: var(--color-brand-strong);
+    cursor: pointer;
+  }
+  .field--check label {
+    font-weight: 400;
+  }
+  .field--check label a {
+    color: var(--color-brand-strong);
+    font-weight: 600;
+  }
+  .field--check .field__error {
+    grid-column: 2;
+  }
+  .form-status:empty {
+    display: none;
+  }
+  .form-status {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+  .form-error {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--color-danger-soft);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-md);
+    color: var(--color-danger);
+  }
+  .form-error[hidden] {
+    display: none;
+  }
+  .form-error :global(svg) {
+    flex: none;
+  }
+  .form-error p {
+    color: var(--color-text);
+    font-size: var(--text-sm);
+  }
+  .form-error__alt a {
+    font-weight: 700;
+    color: var(--color-danger);
+  }
+  .form-foot {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-top: calc(-1 * var(--space-2));
+  }
+  .form-disabled {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-brand-soft);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  /* Botón con estados de carga (Button Loading States) */
+  .submit {
+    position: relative;
+    justify-self: start;
+    min-width: 220px;
+  }
+  .submit__spinner {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgb(255 255 255 / 0.35);
+    border-top-color: var(--color-white);
+    border-radius: 50%;
+    opacity: 0;
+  }
+  .is-loading .submit__label,
+  .is-loading .submit :global(.submit__arrow) {
+    opacity: 0;
+  }
+  .is-loading .submit__spinner {
+    opacity: 1;
+    animation: spin 0.8s linear infinite;
+  }
+  .submit:disabled {
+    cursor: progress;
+  }
+  .submit.shake {
+    animation: shake 400ms ease;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes shake {
+    20% {
+      transform: translateX(-7px);
+    }
+    40% {
+      transform: translateX(6px);
+    }
+    60% {
+      transform: translateX(-4px);
+    }
+    80% {
+      transform: translateX(2px);
+    }
+  }
+
+  /* Éxito (Checkmark Draw) */
+  .form-success {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-3);
+    padding-block: var(--space-10);
+    text-align: center;
+  }
+  .form-success[hidden] {
+    display: none;
+  }
+  .form-success h3 {
+    font-size: var(--text-2xl);
+    font-weight: 850;
+  }
+  .form-success p {
+    max-width: 30rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-3);
+  }
+  .checkdraw {
+    width: 88px;
+    height: 88px;
+  }
+  .checkdraw circle,
+  .checkdraw path {
+    fill: none;
+    stroke: var(--color-success);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .form-success:not([hidden]) .checkdraw circle,
+    .form-success:not([hidden]) .checkdraw path {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: check-draw 500ms var(--ease-out) forwards;
+    }
+    .form-success:not([hidden]) .checkdraw path {
+      animation-delay: 300ms;
+    }
+  }
+  @keyframes check-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Contacto directo */
+  .contact__aside {
+    position: sticky;
+    top: calc(var(--header-h) + 24px);
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+    background: var(--color-ink-950);
+    color: var(--color-text-inverse);
+    border-radius: var(--radius-xl);
+  }
+  .contact__aside h3 {
+    font-size: var(--text-xl);
+    font-weight: 800;
+    margin-bottom: var(--space-6);
+  }
+  .direct {
+    display: grid;
+    gap: var(--space-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .direct li {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+  .direct li > :global(svg) {
+    flex: none;
+    color: var(--color-orange-300);
+    margin-top: 4px;
+  }
+  .direct div {
+    display: grid;
+    min-width: 0;
+  }
+  .direct span {
+    font-size: var(--text-xs);
+    letter-spacing: 0.04em;
+    color: var(--color-text-inverse-muted);
+  }
+  .direct strong,
+  .direct a {
+    font-weight: 700;
+    font-size: var(--text-lg);
+    color: var(--color-white);
+  }
+  .direct a {
+    text-decoration-color: var(--color-orange-300);
+    text-underline-offset: 4px;
+    min-height: 32px;
+  }
+  .direct a:hover {
+    color: var(--color-orange-300);
+  }
+  .direct__email {
+    overflow-wrap: anywhere;
+    font-size: var(--text-base) !important;
+  }
+
+  @media (max-width: 960px) {
+    .contact__inner {
+      grid-template-columns: 1fr;
+    }
+    .contact__aside {
+      position: static;
+    }
+  }
+  @media (max-width: 560px) {
+    .field-row {
+      grid-template-columns: 1fr;
+    }
+    .submit {
+      width: 100%;
+      justify-self: stretch;
+    }
+  }
+</style>

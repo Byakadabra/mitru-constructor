@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { t, routes, type Lang } from '../i18n';
+import { legalContent, PENDING, type LegalKind } from '../i18n/legal';
+import { site } from '../config/site';
+
+interface Props {
+  lang: Lang;
+  kind: LegalKind;
+}
+const { lang, kind } = Astro.props;
+const d = t(lang);
+const titles = { legal: d.legal.notice, privacy: d.legal.privacy, cookies: d.legal.cookies };
+const title = titles[kind];
+const sections = legalContent[lang][kind];
+// Parte cada párrafo por la marca de dato pendiente para mostrar una etiqueta visible.
+const split = (p: string) => p.split(PENDING);
+---
+
+<BaseLayout
+  lang={lang}
+  pageKey={kind}
+  title={`${title} | ${site.name}`}
+  description={`${title} — ${d.meta.description}`}
+  noindex
+>
+  <article class="legal container">
+    <nav class="legal__crumbs" aria-label="Breadcrumb">
+      <a href={routes[lang].home}>{d.nav.home}</a> <span aria-hidden="true">/</span> <span>{title}</span>
+    </nav>
+    <h1>{title}</h1>
+    <p class="legal__draft" role="note">{d.legal.draftNote}</p>
+    {
+      sections.map((s) => (
+        <section>
+          <h2>{s.title}</h2>
+          {s.paras.map((p) => (
+            <p>
+              {split(p).map((chunk, i) => (
+                <>
+                  {i > 0 && <mark class="pending">{d.legal.pending}</mark>}
+                  {chunk}
+                </>
+              ))}
+            </p>
+          ))}
+        </section>
+      ))
+    }
+    <p class="legal__back"><a class="btn btn-secondary btn-sm" href={routes[lang].home}>{d.legal.back}</a></p>
+  </article>
+</BaseLayout>
+
+<style>
+  .legal {
+    max-width: 780px;
+    padding-block: var(--space-12) var(--space-20);
+  }
+  .legal__crumbs {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-4);
+  }
+  .legal__crumbs a {
+    color: var(--color-brand-strong);
+  }
+  .legal h1 {
+    font-size: var(--text-3xl);
+    font-weight: 850;
+  }
+  .legal__draft {
+    margin-block: var(--space-6) var(--space-8);
+    padding: var(--space-4);
+    border-left: 4px solid var(--color-brand);
+    background: var(--color-brand-soft);
+    font-size: var(--text-sm);
+  }
+  .legal h2 {
+    font-size: var(--text-xl);
+    font-weight: 800;
+    margin: var(--space-8) 0 var(--space-3);
+  }
+  .legal p + p {
+    margin-top: var(--space-3);
+  }
+  .legal p {
+    color: var(--color-ink-700);
+    overflow-wrap: anywhere;
+  }
+  .pending {
+    padding: 0.1em 0.45em;
+    border-radius: var(--radius-sm);
+    background: var(--color-brand-tint);
+    color: var(--color-brand-stronger);
+    font-weight: 700;
+    font-size: 0.9em;
+  }
+  .legal__back {
+    margin-top: var(--space-12) !important;
+  }
+</style>

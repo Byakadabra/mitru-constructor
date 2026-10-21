@@ -1,0 +1,209 @@
+---
+import Icon from './Icon.astro';
+import type { Dict } from '../i18n/es';
+import { site } from '../config/site';
+
+interface Props {
+  d: Dict;
+}
+const { d } = Astro.props;
+---
+
+<section id="zona" class="section area" aria-labelledby="area-title">
+  <div class="container area__inner">
+    <div class="area__copy" data-reveal>
+      <span class="kicker">{d.area.kicker}</span>
+      <h2 id="area-title">{d.area.title}</h2>
+      <p class="area__text">{d.area.text}</p>
+      <p class="area__towns-label">{d.area.townsLabel}:</p>
+      <ul class="area__towns">
+        {site.area.towns.map((town) => <li>{town}</li>)}
+      </ul>
+
+      <div class="area__notes">
+        <div class="area__note">
+          <Icon name="alert" size={24} />
+          <div>
+            <h3>{d.area.urgentTitle}</h3>
+            <p>{d.area.urgentText}</p>
+          </div>
+        </div>
+        <div class="area__note">
+          <Icon name="calendar" size={24} />
+          <div>
+            <h3>{d.area.holidayTitle}</h3>
+            <p>{d.area.holidayText}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Esquema (no es un mapa a escala): círculos concéntricos alrededor de Reus -->
+    <figure class="area__radar" data-reveal style="--i:1" role="img" aria-label={d.area.mapLabel}>
+      <svg viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+        <circle cx="200" cy="200" r="190" class="ring ring--outer"></circle>
+        <circle cx="200" cy="200" r="127" class="ring"></circle>
+        <circle cx="200" cy="200" r="63" class="ring"></circle>
+        <path d="M200 10V390M10 200H390" class="axis"></path>
+        <circle cx="200" cy="200" r="70" class="pulse"></circle>
+        <circle cx="200" cy="200" r="14" class="dot"></circle>
+        <text x="200" y="240" class="label label--main">Reus</text>
+        <text x="200" y="28" class="label label--km">≈ {site.area.radiusKm} km</text>
+      </svg>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .area__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: clamp(2rem, 1rem + 4vw, 5rem);
+    align-items: center;
+  }
+  .area__copy {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+  }
+  .area__copy h2 {
+    font-size: var(--text-3xl);
+    font-weight: 800;
+  }
+  .area__text {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+  }
+  .area__towns-label {
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+  .area__towns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    margin: calc(-1 * var(--space-2)) 0 0;
+    padding: 0;
+  }
+  .area__towns li {
+    padding: 0.35rem 0.8rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    background: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+  }
+  .area__towns li:first-child {
+    background: var(--color-accent-strong);
+    border-color: var(--color-accent-strong);
+    color: var(--color-white);
+  }
+  .area__notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+  .area__note {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .area__note :global(svg) {
+    flex: none;
+    color: var(--color-brand-strong);
+  }
+  .area__note h3 {
+    font-size: var(--text-base);
+    font-weight: 800;
+  }
+  .area__note p {
+    margin-top: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .area__radar {
+    margin: 0;
+    max-width: 440px;
+    width: 100%;
+    justify-self: center;
+  }
+  .area__radar svg {
+    width: 100%;
+    height: auto;
+  }
+  .ring {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 6;
+    opacity: 0.6;
+  }
+  .ring--outer {
+    fill: var(--color-accent-soft);
+    stroke-dasharray: none;
+    stroke-width: 2;
+    opacity: 1;
+  }
+  .axis {
+    stroke: var(--color-accent-tint);
+    stroke-width: 1;
+  }
+  .dot {
+    fill: var(--color-brand);
+    stroke: var(--color-white);
+    stroke-width: 4;
+  }
+  .pulse {
+    fill: var(--color-brand);
+    opacity: 0.12;
+    transform-origin: 200px 200px;
+  }
+  .label {
+    text-anchor: middle;
+    font-family: var(--font-display);
+    font-weight: 800;
+    fill: var(--color-ink-900);
+  }
+  .label--main {
+    font-size: 26px;
+  }
+  .label--km {
+    font-size: 15px;
+    fill: var(--color-accent-strong);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .pulse {
+      animation: pulse 3.2s var(--ease-out) infinite;
+    }
+  }
+  @keyframes pulse {
+    0% {
+      transform: scale(0.3);
+      opacity: 0.35;
+    }
+    100% {
+      transform: scale(2.6);
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .area__inner {
+      grid-template-columns: 1fr;
+    }
+    .area__radar {
+      max-width: 340px;
+    }
+  }
+  @media (max-width: 520px) {
+    .area__notes {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,67 @@
+---
+import LogoMark from './LogoMark.astro';
+import { site } from '../config/site';
+
+interface Props {
+  href: string;
+  label: string;
+  inverse?: boolean;
+}
+const { href, label, inverse = false } = Astro.props;
+---
+
+<a class:list={['logo', { 'logo--inverse': inverse }]} href={href} aria-label={label}>
+  <LogoMark class="logo__mark" />
+  <span class="logo__text" aria-hidden="true">
+    <span class="logo__word">{site.logoWord}</span>
+    <span class="logo__sub">{site.logoSub}</span>
+  </span>
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--color-accent-strong);
+    border-radius: var(--radius-sm);
+  }
+  .logo :global(.logo__mark) {
+    width: 50px;
+    height: auto;
+    flex: none;
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+  .logo:hover :global(.logo__mark) {
+    transform: translateY(-2px);
+  }
+  .logo__text {
+    display: grid;
+    line-height: 1;
+  }
+  .logo__word {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-stretch: 118%;
+    font-size: 1.45rem;
+    letter-spacing: 0.01em;
+  }
+  .logo__sub {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-stretch: 100%;
+    font-size: 0.66rem;
+    letter-spacing: 0.32em;
+    color: var(--color-brand-strong);
+    margin-top: 3px;
+  }
+  .logo--inverse {
+    color: var(--color-white);
+    --logo-house: #43b356;
+    --logo-window: #0f1712;
+  }
+  .logo--inverse .logo__sub {
+    color: var(--color-orange-300);
+  }
+</style>
